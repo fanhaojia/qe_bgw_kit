@@ -6,9 +6,13 @@ It can generate DFT dirs: 01scf, 02wfn, 03wfnq, 04wfn_co, 05wfn_fi, 06wfnq_fi, 0
 It can generate BGW dirs: eps eps_bse sigma kernel bse intep intep_wannier
 
 poscar_qe                           ! transfer POSCAR to QE format
+
 get_eqp_co_from_pwscf_xml.py        ! get fake eqp_co.dat from the pwscf.xml of 04wfn_co files, you should define kpoints, cbm_shift, vbm_shift 
+
 plotband_pwscf.py                   ! polt pwscf band structure
+
 mismatch_eig.py                     ! match the mismatch between pwscf_DFTGW.eig  and pwscf_GW.eig 
+
 *note 
 ./qe_bgw_kit/bin/kmesh.pl is modified, its origin version is from the wannier90 package.
 

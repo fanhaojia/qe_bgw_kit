@@ -1,0 +1,15 @@
+#!/bin/bash
+
+a=-0.01
+b=0.0
+
+if [ $(echo " $a > $b" |bc) == 1 ]; then
+echo "www"
+
+else
+
+echo "ppp"
+
+fi
+
+

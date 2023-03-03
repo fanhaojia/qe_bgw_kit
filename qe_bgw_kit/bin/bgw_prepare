@@ -1,0 +1,18 @@
+#!/bin/bash
+export KIT_PATH=/home/jiafanhao/software/bin/qe_bgw_kit
+echo "################Started the prepartions##########"
+cat $KIT_PATH/src/environment_variable >prepare_bgw.sh
+cat input_qe_bgw >>prepare_bgw.sh
+
+cat $KIT_PATH/src/BGW_real >>prepare_bgw.sh
+cat $KIT_PATH/src/BGW_cplx >>prepare_bgw.sh
+
+cat $KIT_PATH/src/bgw_main >>prepare_bgw.sh
+cat $KIT_PATH/src/bgw_job >>prepare_bgw.sh
+
+echo "#rm *prepare* " >>prepare_bgw.sh
+
+chmod +x prepare_bgw.sh
+./prepare_bgw.sh all >log.qe.prepare
+echo "################Finished##########"
+echo "################See log.bgw.prepare for details##########"

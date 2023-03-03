@@ -1,0 +1,224 @@
+
+###################Preparing BGW job.sh##############
+cd $main_dir
+
+Compiler_bgw=compiler
+
+if [ $real_or_complex -eq 1 ]
+then
+BGW_code=BGW_real
+else 
+BGW_code=BGW_cplx
+fi
+
+if [ -d "eps" ]; then
+echo "##########Preparing inputs for eps#############"
+cd $main_dir/eps
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J eps" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_eps >>sub.sh
+echo >>sub.sh
+echo "start time">time
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+
+echo ""$AA"MPI_exe "$AA"EPSILON_EXEC >report"  >>sub.sh
+chmod +x sub.sh
+
+echo "#!/bin/sh" >link.sh
+cat $KIT_PATH/src/$Compiler_bgw >>link.sh
+cat >>link.sh<<!
+export BGW_BIN=$BGW_BIN
+rm epsmat eps0mat* weight.dat WFN WFNq
+ln -s ../DFT/02wfn/WFN ./WFN
+ln -s ../DFT/03wfnq/WFNq ./WFNq
+$BB/degeneracy_check.x WFN
+!
+chmod +x link.sh
+cd $main_dir
+fi
+
+if [ -d "eps_bse" ]; then
+echo "##########Preparing inputs for eps#############"
+cd $main_dir/eps_bse
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J eps_bse" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_eps >>sub.sh
+echo >>sub.sh
+echo "start time">time
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+
+echo ""$AA"MPI_exe "$AA"EPSILON_EXEC >report"  >>sub.sh
+chmod +x sub.sh
+
+echo "#!/bin/sh" >link.sh
+cat $KIT_PATH/src/$Compiler_bgw >>link.sh
+cat >>link.sh<<!
+export BGW_BIN=$BGW_BIN
+rm epsmat eps0mat* weight.dat WFN WFNq
+ln -s ../DFT/02wfn/WFN ./WFN
+ln -s ../DFT/03wfnq/WFNq ./WFNq
+$BB/degeneracy_check.x WFN
+!
+chmod +x link.sh
+cd $main_dir
+fi
+
+if [ -d "sigma" ]; then
+echo "##########Preparing inputs for sigma#############"
+cd $main_dir/sigma
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J sigma" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_sigma >>sub.sh
+echo >>sub.sh
+echo "start time">time
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+
+echo ""$AA"MPI_exe "$AA"SIGMA_EXEC >report"  >>sub.sh
+echo ""$AA"EQP_SCRIPT eqp1 ./sigma_hp.log ./eqp_co.dat"  >>sub.sh
+chmod +x sub.sh
+
+echo "#!/bin/sh" >link.sh
+cat $KIT_PATH/src/$Compiler_bgw >>link.sh
+cat >>link.sh<<!
+export BGW_BIN=$BGW_BIN
+rm epsmat* eps0mat* WFN* RHO vxc.dat
+ln -s ../DFT/04wfn_co/WFN_co ./WFN_inner
+ln -s ../DFT/04wfn_co/RHO ./RHO
+ln -s ../DFT/04wfn_co/vxc.dat ./
+ln -s ../eps/eps0mat.h5 .
+ln -s ../eps/epsmat.h5 .
+$BB/degeneracy_check.x WFN_inner
+!
+chmod +x link.sh
+cd ../
+fi
+
+if [ -d "kernel" ]; then
+echo "##########Preparing inputs for kernel#############"
+cd $main_dir/kernel
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J kernel" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_kernel >>sub.sh
+echo >>sub.sh
+echo "start time">time
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+
+echo ""$AA"MPI_exe "$AA"KERNEL >report"  >>sub.sh
+chmod +x sub.sh
+
+echo "#!/bin/sh" >link.sh
+cat $KIT_PATH/src/$Compiler_bgw >>link.sh
+cat >>link.sh<<!
+export BGW_BIN=$BGW_BIN
+rm epsmat* eps0mat* WFN* RHO vxc.dat
+ln -s ../DFT/04wfn_co/WFN_co ./WFN_co
+ln -s ../eps_bse/eps0mat.h5 .
+ln -s ../eps_bse/epsmat.h5 .
+$BB/degeneracy_check.x WFN_co
+!
+chmod +x link.sh
+cd ../
+fi
+
+
+if [ -d "bse" ]; then
+echo "##########Preparing inputs for bse#############"
+cd $main_dir/bse
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J bse" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_bse >>sub.sh
+echo >>sub.sh
+echo "start time">time
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+
+echo ""$AA"MPI_exe "$AA"ABSORPTION  >report"  >>sub.sh
+chmod +x sub.sh
+
+echo "#!/usr/bin/bash" >sub_ev.sh
+echo "#BSUB -J bse" >>sub_ev.sh
+cat $KIT_PATH/src/PBS_$Speed_bse >>sub_ev.sh
+cat $KIT_PATH/src/$Compiler_bgw >>sub_ev.sh
+echo "export BGW_BIN=$BGW_BIN" >>sub_ev.sh
+cat $KIT_PATH/src/$BGW_code >>sub_ev.sh
+
+echo ""$AA"MPI_exe "$AA"SUM_EV  >report_ev"  >>sub_ev.sh
+chmod +x sub_ev.sh
+
+echo "#!/bin/sh" >link.sh
+cat $KIT_PATH/src/$Compiler_bgw >>link.sh
+cat >>link.sh<<!
+export BGW_BIN=$BGW_BIN
+rm epsmat* eps0mat* WFN* sigma_hp.log eqp_co.dat bsemat.h5
+ln -s ../DFT/04wfn_co/WFN_co ./WFN_co
+ln -s ../DFT/05wfn_fi/WFN_fi ./WFN_fi
+ln -s ../DFT/06wfnq_fi/WFNq_fi ./WFNq_fi
+ln -s ../kernel/bsemat.h5 .
+ln -s ../eps_bse/eps0mat.h5 .
+ln -s ../eps_bse/epsmat.h5 .
+ln -s ../sigma/sigma_hp.log .
+ln -s ../sigma/eqp_co.dat .
+$BB/degeneracy_check.x WFN_co
+!
+chmod +x link.sh
+cd ../
+fi
+
+
+if [ -d "intep" ]; then
+echo "##########Preparing inputs for intep#############"
+cd $main_dir/intep
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J intep" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_intep >>sub.sh
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe "$AA"INTEQP_EXEC >report"  >>sub.sh
+chmod +x sub.sh
+
+echo "#!/bin/sh" >link.sh
+cat $KIT_PATH/src/$Compiler_bgw >>link.sh
+cat >>link.sh<<!
+export BGW_BIN=$BGW_BIN
+rm rm epsmat* eps0mat* WFN* sigma_hp.log eqp_co.dat bsemat.h5
+ln -s ../DFT/04wfn_co/WFN_co ./WFN_co
+ln -s ../DFT/08bands/WFN_fi ./WFN_fi
+cp ../eqp_co.dat .
+$BB/degeneracy_check.x WFN_co
+!
+chmod +x link.sh
+cd ../
+fi
+
+if [ -d "intep_wannier" ]; then
+echo "##########Preparing inputs for intep#############"
+cd $main_dir/intep_wannier
+
+echo "#!/bin/sh" >link.sh
+cat $KIT_PATH/src/$Compiler_bgw >>link.sh
+cat >>link.sh<<!
+export BGW_BIN=$BGW_BIN
+export tools_bin=$KIT_PATH/bin
+
+cp ../sigma_hp.log .
+cp ../eqp_co.dat .
+
+cp $TT/plotband_pwscf.py .
+cp $TT/mismatch_eig.py .
+
+ln -s ../DFT/07wannier/pwscf.mmn .
+ln -s ../DFT/07wannier/pwscf.amn .
+ln -s ../DFT/07wannier/pwscf.nnkp .
+ln -s ../DFT/07wannier/pwscf.eig pwscf.eig_DFT
+$BB/sig2wan.x
+!
+chmod +x link.sh
+cd ../
+fi
+
+echo "All the BGW job.sh you want are prepared. Please carefully check and modify before the submittion!"

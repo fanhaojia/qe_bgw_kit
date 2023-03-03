@@ -1,0 +1,9 @@
+export QE_BIN=/share/opt/apps/qe/7.1/2017/bin
+PW_exe="$QE_BIN/pw.x < in > ./report"
+PW_exe_nk2="$QE_BIN/pw.x -nk 2 -i in > ./report"
+PW_exe_nk4="$QE_BIN/pw.x -nk 4 -i in > ./report"
+PW_exe_nk8="$QE_BIN/pw.x -nk 8 -i in > ./report"
+PW_exe_nk16="$QE_BIN/pw.x -nk 16 -i in > ./report"
+PW2BGW_exe="$QE_BIN/pw2bgw.x -in ./pp.in &> ./report.pp"
+PW2WAN_exe="$QE_BIN/pw2wannier90.x "
+WANNIER_exe=/share/opt/apps/wannier/3.1.0/2018/wannier90.x

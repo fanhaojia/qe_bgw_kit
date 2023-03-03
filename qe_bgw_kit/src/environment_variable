@@ -1,0 +1,21 @@
+#!/bin/bash
+AA="$"
+KK="$"KIT_PATH
+PP="$"PATH
+QQ="$"QE_BIN
+BB="$"BGW_BIN
+TT="$"tools_bin
+##########In the following, you can set as default##############
+export use_poscar=.True.                   #using POSCAR in format of VASP to get the cell file
+
+##########You must set the following enivronmental varies ##############
+module load compiler/intel/2017_up7 hdf5
+export KIT_PATH=/home/jiafanhao/software/bin/qe_bgw_kit
+export PATH=/share/opt/miniconda3/bin
+export tools_bin=/home/jiafanhao/software/bin/qe_bgw_kit/bin
+export BGW_BIN=/share/opt/apps/BGW/3.0.1/2017/bin
+export QE_BIN=/share/opt/apps/qe/7.1/2017/bin
+
+pseudo_dir=/share/opt/apps/qe/pseudo_qe/dojo/sr
+pseudo_dir_soc=/share/opt/apps/qe/pseudo_qe/dojo/fr
+export PATH=/usr/bin:$PATH

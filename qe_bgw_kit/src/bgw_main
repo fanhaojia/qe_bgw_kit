@@ -1,0 +1,189 @@
+
+echo "#########################mkdir for 01scf 02wfn etc...#######################"
+export main_dir=$PWD
+
+if [ -d "DFT" ]; then
+mv spin_info pwscf.win kpath* cell.in ./DFT/00kgrids &> /dev/null 
+mkdir tmp eps eps_bse sigma kernel bse intep intep_wannier
+
+cd tmp
+cp ../DFT/00kgrids/kp2 ./kp
+nkline=`awk '{print NR}' kp |tail -n1`
+
+echo 'begin qpoints'>>qpoints
+echo 'begin kpoints'>>kpoints
+
+qx=`sed -n "3p" kp |awk '{print $1}'`
+qy=`sed -n "3p" kp |awk '{print $2}'`
+qz=`sed -n "3p" kp |awk '{print $3}'`
+qqx=$(printf "%.9f" `echo "scale=9; $qx +${q_shift[0]}"|bc`)
+qqy=$(printf "%.9f" `echo "scale=9; $qy +${q_shift[1]}"|bc`)
+qqz=$(printf "%.9f" `echo "scale=9; $qz +${q_shift[2]}"|bc`)
+echo " "$qqx "  "$qqy"  "$qqz" " "1.0 1" >>qpoints
+echo " "$qx "  "$qy"  "$qz" " "1.0" >>kpoints
+
+for((i=4;i<=$nkline;i++));
+do
+qx=`sed -n ""$i"p" kp |awk '{print $1}'`
+qy=`sed -n ""$i"p" kp |awk '{print $2}'`
+qz=`sed -n ""$i"p" kp |awk '{print $3}'`
+echo " "$qx "  "$qy"  "$qz" " "1.0 0" >>qpoints
+echo " "$qx "  "$qy"  "$qz" " "1.0" >>kpoints
+done
+echo 'end' >>qpoints
+echo 'end' >>kpoints
+cd ../
+
+###############################################eps##################################################
+if [ -d "eps" ]; then
+cd ./eps
+cat >epsilon.inp<<!
+epsilon_cutoff $epsilon_cutoff
+degeneracy_check_override
+number_valence_pools 4
+!
+if [ $two_dimentional -eq 1 ]
+then
+cat >>epsilon.inp<<!
+cell_slab_truncation
+!
+fi
+echo >>epsilon.inp
+cat ../tmp/qpoints >>epsilon.inp
+cd ../
+fi
+
+if [ -d "eps_bse" ]; then
+cd ./eps_bse
+cat >epsilon.inp<<!
+epsilon_cutoff $epsilon_cutoff_bse
+degeneracy_check_override
+number_valence_pools 4
+!
+if [ $two_dimentional -eq 1 ]
+then
+cat >>epsilon.inp<<!
+cell_slab_truncation
+!
+fi
+echo >>epsilon.inp
+cat ../tmp/qpoints >>epsilon.inp
+cd ../
+fi
+
+if [ -d "sigma" ]; then
+cd ./sigma
+cat >sigma.inp<<!
+band_index_min 1
+band_index_max 1
+number_sigma_pools 4
+screening_semiconductor
+degeneracy_check_override
+!
+if [ $two_dimentional -eq 1 ]
+then
+cat >>sigma.inp<<!
+cell_slab_truncation
+!
+fi
+echo >>sigma.inp
+cat ../tmp/kpoints >>sigma.inp
+cd ../
+fi
+
+if [ -d "kernel" ]; then
+cd ./kernel
+cat >kernel.inp<<!
+number_val_bands 3
+number_cond_bands 10
+use_symmetries_coarse_grid
+screening_semiconductor
+!
+if [ $two_dimentional -eq 1 ]
+then
+cat >>kernel.inp<<!
+cell_slab_truncation
+!
+fi
+cd ../
+fi
+
+if [ -d "bse" ]; then
+cd ./bse
+cat >absorption.inp<<!
+number_val_bands_coarse 2
+number_cond_bands_coarse 2
+number_val_bands_fine 1
+number_cond_bands_fine 1
+
+use_symmetries_coarse_grid
+no_symmetries_fine_grid
+no_symmetries_shifted_grid
+eqp_co_corrections
+
+screening_semiconductor
+use_velocity
+
+gaussian_broadening
+energy_resolution 0.05
+!
+echo >>absorption.inp
+echo "#use_momentum" >>absorption.inp
+echo "#polarization 0.01 0.01 0.0" >>absorption.inp
+echo "#write_eigenvectors 2000" >>absorption.inp
+echo >>absorption.inp
+if [ $two_dimentional -eq 1 ]
+then
+cat >>absorption.inp<<!
+cell_slab_truncation
+!
+fi
+cat > summarize_eigenvectors.inp <<!
+.true.           ! Whether you used TDA. This will usually be .true.
+0                ! Number of eigenvectors in file.  Set to zero to use default ns*nv*nc*nk
+1.0 5.0          ! Emin Emax (eV). Energy window to print information about all states in
+4               ! Number of specific states to print A(k). Output files will be exciton_01 ... exciton_99
+  0.23393363E+01  !0.84552440E-03
+  0.23595161E+01  !0.42351832E+04
+  0.23600990E+01  !0.37722337E+04
+  0.23812046E+01  !0.53758336E+00
+!
+cd ../
+fi
+
+if [ -d "intep" ]; then
+cd ./intep
+cat > inteqp.inp <<!
+number_val_bands_coarse 2
+number_cond_bands_coarse 2
+number_val_bands_fine 1
+number_cond_bands_fine 1
+
+use_symmetries_coarse_grid
+no_symmetries_fine_grid
+no_symmetries_shifted_grid
+eqp_co_corrections
+!
+cd ../
+fi
+
+if [ -d "intep_wannier" ]; then
+cd ./intep_wannier
+cat > sig2wan.inp <<!
+sigma_hp.log   ! Sigma output file to read k-points, eigenvalues and symmetries from
+1              ! spin component to read from sigma_hp.log file
+1              ! set to 0 or 1 to read eqp0 or eqp1 from sigma_hp.log file
+pwscf.nnkp   ! Wannier90 input file to read k-points from
+pwscf.eig_GW    ! file where the output of sig2wan is written
+19             ! number of bands to write out
+12             ! starting band index in silicon.eig
+!
+cd ../
+fi
+
+else
+echo "Error: You don't have DFT files. Please do qe_prepare firstly!"
+exit
+fi
+
+echo "All the BGW input files you want are prepared. Please carefully check everything is right before the submittion!"

@@ -1,0 +1,8 @@
+ulimit -s unlimited
+ulimit -l unlimited
+module load compiler/intel/2017_up7 hdf5
+export MKL_DEBUG_CPU_TYPE=5
+export MKL_CBWR=AVX2
+export FI_PROVIDER=mlx
+export I_MPI_PIN_DOMAIN=numa
+export MPI_exe="mpirun --bind-to l3cache --map-by l3cache -genv I_MPI_FABRICS=shm:tcp -genv I_MPI_PIN_CELL=1 -genv KMP_AFFINITY verbose,granularity=fine,compact -bootstrap lsf"

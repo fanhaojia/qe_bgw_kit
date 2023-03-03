@@ -1,0 +1,101 @@
+###############################Main inputs##############################
+#########please mind there is no empty space between "=" and "value"####
+number_of_atoms=2               ##how many atoms
+number_of_atom_types=2          ##how many elements
+real_or_complex=2               ##real or complex distribution of WFN
+encut=60                        ##KS cutoff in ry
+nbands_scf=16                   ##set for 01scf
+nbands_wfn=600                  ##set for 02wfn
+nbands_wannier=24               ##set for 07wannier
+nbands_band_structure=16        ##set for 08bands
+
+kgrids_corse=(8 8 8)            ##set for 01scf, 02wfn, 04wfn_co, 07wannier
+kgrids_fine=(16 16 16)          ##set for 05wfn_fi, 06wfnq_fi, both of which is used for BSE
+q_shift=(0.001 0.001 0.001)     ##q shift for 03wfnq (epsilon)
+q_shift_bse=(0.001 0.002 0.003) ##q shift for 06wfnq_fi(BSE)
+k_shift=(0.5 0.5 0.5)           ##k shift for 02wfn (it is very useful for epsilon converging for direct gap seimiconductor when PBE gives too small band gap)
+
+two_dimentional=0               ## 1 is it 2D system. 0 is 3D 
+hdf5=1                          ## 1 is using hdf5, 0 is not using
+spin=0                          ## 1 is spin polarized, 0 is spin unpolarized
+soc=0                           ## 1 is considering SOC effect, 0 is spin collinear
+pseudo_dir="'/share/opt/apps/qe/pseudo_qe/dojo/sr'" ##path of NC pseudo potential 
+
+#####################Optional flags for BGW#####################
+epsilon_cutoff=40
+epsilon_cutoff_bse=10
+
+########Optional flags for wannier90 ###
+cat > pwscf.win<<!
+num_bands         = $nbands_wannier
+num_wann          = 8
+Begin Projections
+Ga: sp3
+As: sp3 
+End Projections
+!
+
+########Optional flags for spin polarized calculation###
+#cat > spin_info <<!
+#   nspin=2
+#   starting_magnetization(i)=0.5
+#!   
+########Optional flags: for 08band  and 07wannier###
+cat > kpath_GaAs<<!
+K_POINTS crystal_b
+7
+G     0.0000000000   0.0000000000   0.0000000000    20
+X     0.5000000000   0.0000000000   0.5000000000    20
+L     0.5000000000   0.5000000000   0.5000000000    20
+W     0.5000000000   0.2500000000   0.7500000000    20
+W2    0.7500000000   0.2500000000   0.5000000000    20 
+K     0.3750000000   0.3750000000   0.7500000000    20
+U     0.6250000000   0.2500000000   0.6250000000    0
+!
+cat > kpath_BN<<!
+K_POINTS crystal_b
+4
+G     0.000   0.000   0.000   40
+M     0.000   0.500   0.000   40
+K    -0.333   0.667   0.000   40
+G     0.000   0.000   0.000   0
+!
+mv kpath_GaAs kpath
+
+###############################Optional flags for kgrid.x on 2D systems##############################
+#cat > cell.in <<!
+#
+#     0.00000000000000   2.8456267082698776   2.8456267082698776
+#     2.8456267082698776   0.00000000000000   2.8456267082698776
+#     2.8456267082698776   2.8456267082698776   0.00000000000000
+#1
+#6 0.0000000000000000 0.0000000000000000 0.0000000000000000
+#1 1 1
+#.false.
+#!
+
+###############################Main inputs is finished##############################
+
+###############################The following can be set as default##############################
+nbands_wfnq=$nbands_scf
+nbands_wfn_co=$nbands_band_structure
+nbands_wfn_fi=$nbands_band_structure
+nbands_wfnq_fi=$nbands_scf
+
+Speed_scf=128
+Speed_wfn=128
+Speed_epsilon=128
+Speed_sigma=$Speed_epsilon
+Speed_wfnq=$Speed_scf
+Speed_wfn_co=$Speed_scf
+Speed_wfn_fi=$Speed_wfn
+Speed_wannier=$Speed_scf
+Speed_bands=$Speed_wfn
+
+Speed_eps=$Speed_wfn
+Speed_bse=64
+Speed_kernel=$Speed_wfn
+Speed_sigma=$Speed_wfn
+Speed_intep=64
+##############################################################
+

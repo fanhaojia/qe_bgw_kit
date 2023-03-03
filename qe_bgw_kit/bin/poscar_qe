@@ -1,0 +1,196 @@
+#!/share/opt/miniconda3/bin/python
+from math import *
+import numpy as np
+import linecache
+
+atomic_mass=elements_dict = {'H' : 1.008,'He' : 4.003, 'Li' : 6.941, 'Be' : 9.012, 'B' : 10.811, 'C' : 12.011, 'N' : 14.007, 'O' : 15.999,\
+                 'F' : 18.998, 'Ne' : 20.180, 'Na' : 22.990, 'Mg' : 24.305, 'Al' : 26.982, 'Si' : 28.086, 'P' : 30.974, 'S' : 32.066,  'Cl' : 35.453, \
+                'Ar' : 39.948, 'K' : 39.098, 'Ca' : 40.078, 'Sc' : 44.956, 'Ti' : 47.867, 'V' : 50.942, 'Cr' : 51.996, 'Mn' : 54.938, 'Fe' : 55.845, \
+                 'Co' : 58.933, 'Ni' : 58.693, 'Cu' : 63.546, 'Zn' : 65.38, 'Ga' : 69.723, 'Ge' : 72.631, 'As' : 74.922, 'Se' : 78.971, 'Br' : 79.904, \
+                 'Kr' : 84.798, 'Rb' : 84.468, 'Sr' : 87.62, 'Y' : 88.906, 'Zr' : 91.224,  'Nb' : 92.906, 'Mo' : 95.95, 'Tc' : 98.907, 'Ru' : 101.07,\
+                 'Rh' : 102.906, 'Pd' : 106.42, 'Ag' : 107.868, 'Cd' : 112.414,  'In' : 114.818, 'Sn' : 118.711, 'Sb' : 121.760, 'Te' : 126.7,\
+                 'I' : 126.904, 'Xe' : 131.294, 'Cs' : 132.905, 'Ba' : 137.328, 'La' : 138.905, 'Ce' : 140.116, 'Pr' : 140.908, 'Nd' : 144.243,\
+                 'Pm' : 144.913, 'Sm' : 150.36, 'Eu' : 151.964, 'Gd' : 157.25, 'Tb' : 158.925, 'Dy': 162.500, 'Ho' : 164.930, 'Er' : 167.259,\
+                 'Tm' : 168.934, 'Yb' : 173.055, 'Lu' : 174.967, 'Hf' : 178.49,  'Ta' : 180.948, 'W' : 183.84, 'Re' : 186.207, 'Os' : 190.23,\
+                 'Ir' : 192.217, 'Pt' : 195.085, 'Au' : 196.967, 'Hg' : 200.592, 'Tl' : 204.383, 'Pb' : 207.2, 'Bi' : 208.980, 'Po' : 208.982,\
+                 'At' : 209.987, 'Rn' : 222.081, 'Fr' : 223.020, 'Ra' : 226.025, 'Ac' : 227.028, 'Th' : 232.038, 'Pa' : 231.036, 'U' : 238.029,\
+                 'Np' : 237, 'Pu' : 244, 'Am' : 243, 'Cm' : 247, 'Bk' : 247, 'Ct' : 251, 'Es' : 252, 'Fm' : 257, 'Md' : 258, 'No' : 259,  'Lr' : 262,\
+                 'Rf' : 261, 'Db' : 262, 'Sg' : 266, 'Bh' : 264, 'Hs' : 269, 'Mt' : 268, 'Ds' : 271, 'Rg' : 272, 'Cn' : 285,\
+                 'Nh' : 284, 'Fl' : 289, 'Mc' : 288, 'Lv' : 292, 'Ts' : 294,  'Og' : 294}
+
+def get_volume(nabc):
+    """Calculates the volume from the triple product of self.cell"""
+    b1=nabc[0];b2=nabc[1];b3=nabc[2]
+    volume = abs(np.dot(np.cross(b1, b2), b3))
+    return volume
+
+def split_line_str(line):
+    out=[]
+    wlist=line.split(' ')
+    for word in wlist:
+        if len(word)>0 and word != ' ' :
+            if word[-1]== '\n':
+                if len(word[:-1])>0 and word[:-1]!='':
+                    out.append(word[:-1])
+            else:
+                out.append(word)
+    return out 
+
+def split_line_int(line):
+    out=[]
+    wlist=line.split(' ')
+    for word in wlist:
+        if len(word)>0 and word != ' ' :
+            if word[-1]== '\n':
+                if len(word[:-1])>0 and word[:-1]!='':
+                    out.append(int(word[:-1]))
+            else:
+                out.append(int(word))
+    return out 
+
+def split_line_float(line):
+    out=[]
+    wlist=line.split(' ')
+    i=0
+    for word in wlist:
+        if len(word)>0 and word != ' ' and i<3:
+            if word[-1]== '\n':
+                if len(word[:-1])>0 and word[:-1]!='':
+                    out.append(float(word[:-1]))
+            else:
+                out.append(float(word))
+            i=i+1
+    return out 
+
+def normalize_atom_position(a):
+    if a < 0.0:
+        a=a+1
+    elif a > 1.0:
+        a=a-1
+    else:
+        a = a
+    return a
+
+def fractional_to_cartesian(xyz, abc):
+    nxyz=np.dot(xyz, abc)
+    return nxyz
+
+def cartesian_to_fractional(xyz, abc):
+    nxyz=np.dot(xyz, np.linalg.inv(abc))
+    return nxyz
+
+def read_poscar(fname, cartesian=False):
+    xline = linecache.getline(fname, 6)  ##count how many element in this POSCAR
+    elements=split_line_str(xline)
+    #print (elements)
+    xline = linecache.getline(fname, 7)  ##count how many atoms for each element in this POSCAR
+    natom=split_line_int(xline)
+    #print (natom) 
+    xline = linecache.getline(fname, 8)  ##POSCAR is in Cartesian or fractional
+    poscar_type=xline[0]
+    len_block=sum(natom)+9
+    abc=[];xyz=[]
+    for i in range (len_block):
+        if i in range(3,6):
+            xline = linecache.getline(fname, i)
+            abc.append(split_line_float(xline))
+        elif i > 8:
+            xline = linecache.getline(fname, i)
+            a=split_line_float(xline)
+            if poscar_type=='D':
+                for h in range(3):
+                    a[h]=normalize_atom_position(a[h])
+                    h=h+1
+                if cartesian==True:
+                    b=fractional_to_cartesian(a, abc)
+                else:
+                    b=a
+            else:
+                if cartesian==True:
+                    b=a
+                else:
+                    b=cartesian_to_fractional(a, abc)
+            xyz.append(b)
+        i=i+1
+    return natom, elements, abc, xyz
+
+
+def write_qe_cell(natom, elements, abc, xyz):
+    n=3;m=3;nabc=[[0]*m for i in range(n)];
+    tatom=sum(natom)
+    nxyz=[[0]*m for i in range(tatom)];
+    for i in range(3):
+        for j in range(3):
+            nabc[i][j]="%.16f" % (abc[i][j]*angstrom_to_bohr)
+    lattice_a='    '+str(nabc[0][0])+'   '+str(nabc[0][1])+'   '+str(nabc[0][2])
+    lattice_b='    '+str(nabc[1][0])+'   '+str(nabc[1][1])+'   '+str(nabc[1][2])
+    lattice_c='    '+str(nabc[2][0])+'   '+str(nabc[2][1])+'   '+str(nabc[2][2])
+    voulme=get_volume(abc)*angstrom_to_bohr**3
+    print ('lattice vector')
+    print (lattice_a)
+    print (lattice_b)
+    print (lattice_c)
+    print (elements)
+    print (natom)
+    print ('volume  ', voulme)
+    print ('Total number of atoms  ', tatom)
+    
+    str_xyz=[]
+    for i in range(tatom):
+        sstr=str("%.16f" % (xyz[i][0]))+'  '+str("%.16f" % (xyz[i][1]))+'  '+str("%.16f" % (xyz[i][2]))
+        str_xyz.append(sstr)
+        
+    fc=open(contcar,'w')
+    fc=open(contcar,'a+')
+    fc.writelines('CELL_PARAMETERS angstrom')
+    fc.write("\n")
+    fc.writelines(lattice_a)
+    fc.write("\n")
+    fc.writelines(lattice_b)
+    fc.write("\n")
+    fc.writelines(lattice_c)
+    fc.write("\n")
+    fc.writelines('ATOMIC_SPECIES')
+    fc.write("\n")
+    for i  in range(len(elements)):
+        ele_line=elements[i]+'    '+str(atomic_mass[elements[i]])+'    '+elements[i]+'.UPF'
+        fc.writelines(ele_line)
+        fc.write("\n")
+        
+    fc.writelines('ATOMIC_POSITIONS crystal')
+    fc.write("\n")
+    
+    k=0
+    for i in range(len(natom)):
+        if i ==0:
+            for j in range(natom[i]):
+                xyz_line=elements[i]+'    '+str_xyz[j]
+                fc.writelines(xyz_line)
+                fc.write("\n")
+            k=natom[i]
+        else:
+            for j in range(natom[i]):
+                j=k+j
+                xyz_line=elements[i]+'    '+str_xyz[j]
+                fc.writelines(xyz_line)
+                fc.write("\n")
+            k=k+natom[i]
+    fc.close()
+    #fc.writelines('\')
+    #fc.write("\n")
+    #fd=open('atomic_k','w')
+    #fd=open('atomic_k','a+')
+    #fd.writelines('K_POINTS {automatic}')
+    #fd.write("\n")
+    #fd.writelines('6 6 6 0 0 0')
+    #fd.write("\n")
+    #fd.close()
+
+###############################################Main###################################################
+#angstrom_to_bohr = 1.8897259886
+angstrom_to_bohr = 1.0
+fname='./POSCAR'
+contcar='./cell'
+natom, elements, abc, xyz=read_poscar(fname='POSCAR', cartesian=False)
+write_qe_cell(natom, elements, abc, xyz)
+

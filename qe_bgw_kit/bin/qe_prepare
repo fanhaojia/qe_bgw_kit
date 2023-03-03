@@ -1,0 +1,17 @@
+#!/bin/bash
+export KIT_PATH=/home/jiafanhao/software/bin/qe_bgw_kit
+echo "################Started the prepartions##########"
+cat $KIT_PATH/src/environment_variable >prepare_qe.sh
+cat input_qe_bgw >>prepare_qe.sh
+
+cat $KIT_PATH/src/DFT >>prepare_qe.sh
+
+cat $KIT_PATH/src/qe_main >>prepare_qe.sh
+cat $KIT_PATH/src/dft_job >>prepare_qe.sh
+
+echo "#rm *prepare* " >>prepare_qe.sh
+
+chmod +x prepare_qe.sh
+./prepare_qe.sh all >log.qe.prepare
+echo "################Finished##########"
+echo "################See log.qe.prepare for details##########"

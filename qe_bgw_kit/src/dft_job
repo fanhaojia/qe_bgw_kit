@@ -1,0 +1,214 @@
+
+###################Preparing DFT job.sh##############
+DFT_code=qe
+Compiler_dft=compiler
+
+cd $main_dft
+if [ -d "00kgrids" ]; then
+echo "##########Preparing job.sh for 00kgrids#############"
+cd ./00kgrids
+echo "#!/bin/bash" >link.sh
+cat $KIT_PATH/src/$Compiler_dft >>link.sh
+echo "export BGW_BIN=$BGW_bin" >>link.sh
+echo "export tools_bin=$tools_bin" >>link.sh
+echo >>link.sh
+echo ""$AA"BGW_BIN/kgrid.x  wfn.in  kp2 log2" >>link.sh
+echo ""$AA"BGW_BIN/kgrid.x  wfn0.in  kp4 log4" >>link.sh
+echo ""$AA"BGW_BIN/kgrid.x  wfnq.in  kp3 log3" >>link.sh
+echo ""$AA"BGW_BIN/kgrid.x  wfn_fi.in  kp5 log5" >>link.sh
+echo ""$AA"BGW_BIN/kgrid.x  wfnq_fi.in  kp6 log6" >>link.sh
+echo ""$AA"tools_bin/kmesh.pl ${kgrids_corse[0]} ${kgrids_corse[1]} ${kgrids_corse[2]} >kp7" >>link.sh
+echo >>link.sh
+echo "head -n 7 wfn.in >in" >>link.sh
+echo "cat >> in <<!"  >>link.sh
+echo "1 " >>link.sh
+echo "6 0.0000000000000000  0.0000000000000000 0.0000000000000000" >>link.sh
+echo "1 1 1" >>link.sh
+echo ".false. " >>link.sh
+echo "!" >>link.sh
+echo >>link.sh
+echo >>link.sh
+echo ""$AA"BGW_BIN/kgrid.x  in  out  log " >>link.sh
+echo >>link.sh
+echo "export QE_bin=$QE_bin " >>link.sh
+cat  >> link.sh <<!
+$QE_bin/kpoints.x <<EOF
+4
+kp
+2
+12 12 1
+0 0 0
+f
+EOF
+!
+chmod +x link.sh
+cd ../
+fi
+
+
+if [ -d "01scf" ]; then
+echo "##########Preparing job.sh for 01scf#############"
+cd $main_dft/01scf
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 01scf" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_scf >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/DFT >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe_nk4  >>sub.sh
+echo 'wait' >>sub.sh
+echo "rm ./pwscf.save/*wfc*" >>sub.sh
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "02wfn" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/02wfn
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 02wfn" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wfn >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/DFT >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe_nk2  >>sub.sh
+echo 'wait' >>sub.sh
+echo ""$AA"MPI_exe" $PW2BGW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+echo "rm ./*wfc*" >>sub.sh
+echo "cd  pwscf.save" >>sub.sh
+echo "rm *wfc* *UPF " >>sub.sh
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "03wfnq" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/03wfnq
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 03wfnq" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wfnq >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/DFT >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe_nk4  >>sub.sh
+echo 'wait' >>sub.sh
+echo ""$AA"MPI_exe" $PW2BGW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+echo "rm ./*wfc*" >>sub.sh
+echo "cd  pwscf.save" >>sub.sh
+echo "rm *wfc* *UPF " >>sub.sh
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "04wfn_co" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/04wfn_co
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 04wfn_co" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wfn_co >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/DFT >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe_nk4  >>sub.sh
+echo 'wait' >>sub.sh
+echo ""$AA"MPI_exe" $PW2BGW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+echo "rm ./*wfc*" >>sub.sh
+echo "cd  pwscf.save" >>sub.sh
+echo "rm *wfc* *UPF " >>sub.sh
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "05wfn_fi" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/05wfn_fi
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 05wfn_fi" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wfn_fi >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/DFT >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe_nk16  >>sub.sh
+echo 'wait' >>sub.sh
+echo ""$AA"MPI_exe" $PW2BGW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+echo "rm ./*wfc*" >>sub.sh
+echo "cd  pwscf.save" >>sub.sh
+echo "rm *wfc* *UPF " >>sub.sh
+echo 'wait' >>sub.sh
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "06wfnq_fi" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/06wfnq_fi
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 06wfnq_fi" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wfn_fi >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/DFT >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe_nk16  >>sub.sh
+echo 'wait' >>sub.sh
+echo ""$AA"MPI_exe" $PW2BGW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+echo "rm ./*wfc*" >>sub.sh
+echo "cd  pwscf.save" >>sub.sh
+echo "rm *wfc* *UPF " >>sub.sh
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "07wannier" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/07wannier
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 07wannier" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wannier >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/DFT >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe_nk8  >>sub.sh
+echo 'wait' >>sub.sh
+echo "$WANNIER_exe -pp pwscf" >>sub.sh
+echo 'wait' >>sub.sh
+echo ""$AA"MPI_exe $PW2WAN_exe -in ./pwscf.pw2wan &> report.pw2wan" >>sub.sh
+echo 'wait' >>sub.sh
+echo "$WANNIER_exe pwscf" >>sub.sh
+echo 'wait' >>sub.sh
+echo "sed -i.bak 's/set data style/set style data/' pwscf_band.gnu" >>sub.sh
+echo "#rm ./*wfc*" >>sub.sh
+echo "#cd  pwscf.save" >>sub.sh
+echo "#rm *wfc* *UPF " >>sub.sh
+
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "08bands" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/08bands
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 08bands" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_bands >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/DFT >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe_nk8  >>sub.sh
+echo 'wait' >>sub.sh
+echo ""$AA"MPI_exe" $PW2BGW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+echo "rm ./*wfc*" >>sub.sh
+echo "cd  pwscf.save" >>sub.sh
+echo "rm *wfc* *UPF " >>sub.sh
+chmod +x sub.sh
+fi
+
+cd $main_dir
+echo "All the DFT job.sh you want are prepared. Please carefully check and modify before the submittion!"
+
+

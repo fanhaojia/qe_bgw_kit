@@ -1,0 +1,830 @@
+
+echo "#########################mkdir for 01scf 02wfn etc...#######################"
+mkdir DFT
+mkdir ./DFT/00kgrids
+export main_dir=$PWD
+mv spin_info pwscf.win kpath* cell.in ./DFT/00kgrids &> /dev/null
+
+cd ./DFT
+export main_dft=$PWD
+
+
+to_prepare=`echo $*`
+declare -A dicts
+dicts=([0]="00kgrids" [1]="01scf" [2]="02wfn" [3]="03wfnq" [4]="04wfn_co" [5]="05wfn_fi" [6]="06wfnq_fi" [7]="07wannier" [8]="08bands")
+if [ -z "$to_prepare" ]; then
+  echo "The qe_bgw_prepare needs inputs like: 1 2 3 or All or all"
+  read -p "Enter: " to_prepare
+  if [ -z "$to_prepare" ]; then
+    echo "Warning: Don't have inputs. \
+	0:00kgrids 1:01scf 2:02wfn 3:03wfnq 4:04wfn_co 5:05wfn_fi 6:06wfnq_fi 7:07wannier 8:08bands
+	So, I'm going to prepare all DFT files!"
+    to_prepare='all'
+  fi
+  echo "Ok, I am preparing files for you!"
+fi
+if [ "$to_prepare" == "all" ]; then
+  to_prepare="1 2 3 4 5 6 7 8"
+fi
+if [ "$to_prepare" == "All" ]; then
+  to_prepare="1 2 3 4 5 6 7 8"
+fi
+
+for i in $to_prepare
+do
+  mkdir ${dicts[$i]}
+  echo ${dicts[$i]}
+done
+
+###############################################00kgrids##################################################
+cd 00kgrids
+ln -s ../../POSCAR .
+echo "#########using POSCAR to generate the cell, cell is for the input of pw.x ##########"
+if [ $use_poscar ];then
+echo "###############   Preparing crystal cell by using POSCAR.    ################"
+echo "###############   A few seconds may be needed! Please wait... ################"
+$tools_bin/poscar_qe
+echo "##############  Finished in preparing crystal cell  #############"
+fi
+
+echo "##########Generate cell2 for kgrid.x and cell3 for pwscf.win#############"
+declare -A atomic_number
+atomic_number=( ['H']="1" ['He']="2" ['Li']="3"  ['Be']="4"  ['B']="5" ['C']="6" ['N']="7" ['O']="8" ['F']="9" ['Ne']="10" ['Na']="11" ['Mg']="12" ['Al']="13" ['Si']="14"  ['P']="15"  ['S']="16" ['Cl']="17" ['Ar']="18" ['K']="19" ['Ca']="20" ['Sc']="21" ['Ti']="22" ['V']="23"  ['Cr']="24" ['Mn']="25" ['Fe']="26" ['Co']="27" ['Ni']="28" ['Cu']="29" ['Zn']="30" ['Ga']="31" ['Ge']="32" ['As']="33" ['Se']="34" ['Br']="35" ['Kr']="36" ['Rb']="37" ['Sr']="38"  ['Y']="39" ['Zr']="40" ['Nb']="41" ['Mo']="42" ['Tc']="43" ['Ru']="44" ['Rh']="45" ['Pd']="46" ['Ag']="47" ['Cd']="48" ['In']="49" ['Sn']="50" ['Sb']="51" ['Te']="52" ['I']="53" ['Xe']="54" ['Cs']="55" ['Ba']="56" ['Hf']="72" ['Ta']="73"  ['W']="74" ['Re']="75" ['Os']="76" ['Ir']="77" ['Pt']="78" ['Au']="79" ['Hg']="80" ['Tl']="81" ['Pb']="82" ['Bi']="83" ['La']="57" ['Ce']="58" ['Pr']="59" ['Nd']="60" ['Pm']="61" ['Sm']="62" ['Eu']="63" ['Gd']="64" ['Tb']="65" ['Dy']="66" ['Ho']="67" ['Er']="68" ['Tm']="69" ['Yb']="70" ['Lu']="71" ['Ra']="88" ['Ac']="89" ['Th']="90" ['Pa']="91"  ['U']="92" ['Np']="93" ['Pu']="94" )
+nline=`awk '{print NR}' cell|tail -n1`
+nhead=`awk '/ATOMIC_POSITIONS/{print NR}' cell`
+natom=`expr $nline - $nhead`
+nele=`expr $nline - $natom - 6`
+nstart=`expr $nhead + 1`
+echo '  '>cell2
+sed -n "2p" cell >>cell2
+sed -n "3p" cell >>cell2
+sed -n "4p" cell >>cell2
+echo $natom >>cell2
+echo "Begin Unit_Cell_Cart">cell3
+echo "ang" >>cell3
+sed -n "2p" cell >>cell3
+sed -n "3p" cell >>cell3
+sed -n "4p" cell >>cell3
+echo 'End Unit_Cell_Cart' >>cell3
+echo 'Begin Atoms_Frac' >>cell3
+for((i=$nstart;i<=$nline;i++));
+do
+  pp=`sed -n ""$i"p" cell`
+  ee=`sed -n ""$i"p" cell |awk '{print $1}'`
+  XYZ=`sed -n ""$i"p" cell |awk '{print "  "$2"  "$3"  "$4"  "}'`
+  echo  ${atomic_number[$ee]} $XYZ >>cell2
+  echo $pp >>cell3
+done
+echo '1 1 1' >>cell2
+echo '.false.' >>cell2
+echo 'End Atoms_Frac'>>cell3
+
+echo "##########Preparing inputs for kgrids.x#############"
+# wfng_dk1 = dk1 + wfng_nk1 * dq1.
+kc_a=$(printf "%.5f" `echo "scale=5; ${k_shift[0]}+${kgrids_corse[0]}*${q_shift[0]}"|bc`)
+kc_b=$(printf "%.5f" `echo "scale=5; ${k_shift[1]}+${kgrids_corse[1]}*${q_shift[1]}"|bc`)
+kc_c=$(printf "%.5f" `echo "scale=5; ${k_shift[2]}+${kgrids_corse[2]}*${q_shift[2]}"|bc`)
+
+kf_a=$(printf "%.5f" `echo "scale=5; ${k_shift[0]}+${kgrids_fine[0]}*${q_shift_bse[0]}"|bc`)
+kf_b=$(printf "%.5f" `echo "scale=5; ${k_shift[1]}+${kgrids_fine[1]}*${q_shift_bse[1]}"|bc`)
+kf_c=$(printf "%.5f" `echo "scale=5; ${k_shift[2]}+${kgrids_fine[2]}*${q_shift_bse[2]}"|bc`)
+
+cat >wfn.in<<!
+${kgrids_corse[0]} ${kgrids_corse[1]} ${kgrids_corse[2]}
+${k_shift[0]} ${k_shift[1]} ${k_shift[2]}
+0.0 0.0 0.0
+!
+cat >wfn0.in<<!
+${kgrids_corse[0]} ${kgrids_corse[1]} ${kgrids_corse[2]}
+0.0 0.0 0.0
+0.0 0.0 0.0
+!
+cat >wfnq.in<<!
+${kgrids_corse[0]} ${kgrids_corse[1]} ${kgrids_corse[2]}
+${k_shift[0]} ${k_shift[1]} ${k_shift[2]}
+${q_shift[0]} ${q_shift[1]} ${q_shift[2]}
+!
+cat >wfn_fi.in<<!
+${kgrids_fine[0]} ${kgrids_fine[1]} ${kgrids_fine[2]}
+${k_shift[0]} ${k_shift[1]} ${k_shift[2]}
+0.0 0.0 0.0
+!
+cat >wfnq_fi.in<<!
+${kgrids_fine[0]} ${kgrids_fine[1]} ${kgrids_fine[2]}
+$kf_a $kf_b $kf_c
+0.0 0.0 0.0
+!
+
+if [ -f "./cell.in" ];then 
+cell_in=cell.in
+else 
+cell_in=cell2
+fi
+
+cat $cell_in >>wfn.in
+cat $cell_in >>wfnq.in
+cat $cell_in >>wfn0.in
+cat cell2 >>wfn_fi.in
+cat cell2 >>wfnq_fi.in
+
+ze=0.0
+if [ $(echo " ${k_shift[0]} > $ze " |bc) == 1 ]; then
+cat >kp1<<!
+K_POINTS automatic
+${kgrids_corse[0]} ${kgrids_corse[1]} ${kgrids_corse[2]} 1 1 1
+!
+else
+cat >kp1<<!
+K_POINTS automatic
+${kgrids_corse[0]} ${kgrids_corse[1]} ${kgrids_corse[2]} 0 0 0
+!
+fi
+
+#nk1 nk2 nk3 sk1 sk2 sk3 
+#Note! In QE, sk1 sk2 sk3 must be 0 ( no offset ) or 1 ( grid displaced by half) 
+
+$BGW_BIN/kgrid.x  wfn.in  kp2 log2
+$BGW_BIN/kgrid.x  wfn0.in  kp4 log4
+$BGW_BIN/kgrid.x  wfnq.in  kp3 log3
+$BGW_BIN/kgrid.x  wfn_fi.in  kp5 log5
+$BGW_BIN/kgrid.x  wfnq_fi.in  kp6 log6
+$tools_bin/kmesh.pl ${kgrids_corse[0]} ${kgrids_corse[1]} ${kgrids_corse[2]} >kp7
+
+echo "##########generate kgrids_band_structure#############"
+nk=`sed -n "2p" kpath |awk '{print $1}'`
+sed -n "1p" kpath >kgrids_band_structure
+sed -n "2p" kpath >>kgrids_band_structure
+for((i=1;i<=$nk;i++));
+do
+kline=`expr $i + 2`
+kx=`sed -n ""$kline"p" kpath |awk '{print $2}'`
+ky=`sed -n ""$kline"p" kpath |awk '{print $3}'`
+kz=`sed -n ""$kline"p" kpath |awk '{print $4}'`
+nkk=`sed -n ""$kline"p" kpath |awk '{print $5}'`
+echo " "$kx "  " $ky  "  "$kz " " $nkk >>kp8
+done
+
+echo "###########Preparing pwscf.win#######################"
+echo >>pwscf.win
+cat >>pwscf.win<<!
+NUM_ITER         = 300
+#dis_froz_max = 10.5
+#dis_froz_min = -10.0
+#exclude_bands = 12-32
+!
+echo >>pwscf.win
+cat cell3 >>pwscf.win 
+echo >>pwscf.win
+echo 'begin kpoint_path' >kpath_wannier
+for((i=1;i<$nk;i++));
+do
+kline_1=`expr $i + 2`
+kline_2=`expr $i + 3`
+ K_1=`sed -n ""$kline_1"p" kpath |awk '{print $1}'`
+kx_1=`sed -n ""$kline_1"p" kpath |awk '{print $2}'`
+ky_1=`sed -n ""$kline_1"p" kpath |awk '{print $3}'`
+kz_1=`sed -n ""$kline_1"p" kpath |awk '{print $4}'`
+ K_2=`sed -n ""$kline_2"p" kpath |awk '{print $1}'`
+kx_2=`sed -n ""$kline_2"p" kpath |awk '{print $2}'`
+ky_2=`sed -n ""$kline_2"p" kpath |awk '{print $3}'`
+kz_2=`sed -n ""$kline_2"p" kpath |awk '{print $4}'`
+echo $K_1 "  " $kx_1 "  " $ky_1  "  " $kz_1 "  " $K_2   "  " $kx_2 "  " $ky_2  "  " $kz_2 >>kpath_wannier
+done
+echo 'end kpoint_path' >>kpath_wannier
+echo 'bands_num_points 60' >>kpath_wannier
+echo 'bands_plot = .true.' >>kpath_wannier
+cat kpath_wannier >>pwscf.win
+echo >>pwscf.win
+echo 'mp_grid=' ${kgrids_corse[0]} ${kgrids_corse[1]} ${kgrids_corse[2]} >>pwscf.win
+echo >>pwscf.win
+echo 'begin kpoints'>>pwscf.win
+nkline=`awk '{print NR}' kp7 |tail -n1`
+for((i=3;i<=$nkline;i++));
+do
+sed -n ""$i"p" kp7 >>pwscf.win
+done
+echo 'end kpoints' >>pwscf.win
+
+cd ../ 
+###############################################Leaving 00kgrids##################################################
+if [ $hdf5 -eq 1 ]
+then
+export ChargeDensity=charge-density.hdf5
+else
+export ChargeDensity=charge-density.xml
+fi
+export datafile=data-file-schema.xml
+
+export pseudo_dir=$pseudo_dir
+if [ $soc -eq 1 ]
+then
+export pseudo_dir=$pseudo_dir_soc
+fi
+
+if [ -d "01scf" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cat >in<<!
+&control
+   calculation = 'scf'
+   restart_mode = 'from_scratch'
+   wf_collect = .false.
+   outdir = './'
+   wfcdir = './'
+   pseudo_dir = $pseudo_dir
+/
+&system
+   ibrav = 0
+   nat = $number_of_atoms 
+   ntyp = $number_of_atom_types
+   nbnd = $nbands_scf
+   ecutwfc = $encut
+!
+if [ $two_dimentional -eq 1 ]
+then
+cat >>in<<!
+   assume_isolated='2D'
+!
+fi
+if [ $spin -ne 0 ]
+then
+cat ./00kgrids/spin_info >>in
+fi
+if [ $soc -ne 0 ]
+then
+cat >>in<<!
+   nspin=4
+   noncolin=.TRUE.
+   constrained_magnetization='none'
+   lspinorb=.TRUE.
+!
+fi
+cat >>in<<!
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-10
+   mixing_mode = 'plain'
+   mixing_beta = 0.7
+   mixing_ndim = 8
+   diagonalization = 'david'
+   diago_david_ndim = 4
+   diago_full_acc = .true.
+/
+!
+cat ./00kgrids/cell >>in
+cat ./00kgrids/kp1 >>in
+mv in ./01scf
+fi
+
+if [ -d "02wfn" ]; then
+echo "##########Preparing inputs for 02wfn#############"
+cat >in<<!
+&control
+   calculation = 'bands'
+   restart_mode = 'from_scratch'
+   wf_collect = .true.
+   outdir = './'
+   wfcdir = './'
+   pseudo_dir = $pseudo_dir   
+/
+&system
+   ibrav = 0
+   nat = $number_of_atoms 
+   ntyp = $number_of_atom_types
+   nbnd = $nbands_wfn
+   ecutwfc = $encut
+!
+if [ $two_dimentional -eq 1 ]
+then
+cat >>in<<!
+   assume_isolated='2D'
+!
+fi
+if [ $spin -ne 0 ]
+then
+cat ./00kgrids/spin_info >>in
+fi
+if [ $soc -ne 0 ]
+then
+cat >>in<<!
+   nspin=4
+   noncolin=.TRUE.
+   constrained_magnetization='none'
+   lspinorb=.TRUE.
+!
+fi
+cat >>in<<!
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-6
+   mixing_mode = 'plain'
+   mixing_beta = 0.7
+   mixing_ndim = 8
+   diagonalization = 'david'
+   diago_david_ndim = 4
+   diago_full_acc = .false.
+   startingwfc = 'random'
+/
+!
+cat ./00kgrids/cell >>in
+cat ./00kgrids/kp2 >>in
+#########
+cat >pp.in<<!
+&input_pw2bgw
+   prefix = 'pwscf'
+   real_or_complex = $real_or_complex
+   wfng_flag = .true.
+   wfng_file = 'WFN'
+   wfng_kgrid = .true.
+   wfng_nk1 = ${kgrids_corse[0]}
+   wfng_nk2 = ${kgrids_corse[1]}
+   wfng_nk3 = ${kgrids_corse[2]}
+   wfng_dk1 = ${k_shift[0]}
+   wfng_dk2 = ${k_shift[1]}
+   wfng_dk3 = ${k_shift[2]}
+/
+!
+mv in pp.in ./02wfn
+cd 02wfn
+mkdir pwscf.save
+cd pwscf.save
+ln -s ../../01scf/pwscf.save/$ChargeDensity ./
+ln -s ../../01scf/pwscf.save/$datafile ./
+cd ../../
+fi
+
+if [ -d "03wfnq" ]; then
+echo "##########Preparing inputs for 03wfnq#############"
+cat >in<<!
+&control
+   calculation = 'bands'
+   restart_mode = 'from_scratch'
+   wf_collect = .true.
+   outdir = './'
+   wfcdir = './'
+   pseudo_dir = $pseudo_dir   
+/
+&system
+   ibrav = 0
+   nat = $number_of_atoms 
+   ntyp = $number_of_atom_types
+   nbnd = $nbands_wfnq
+   ecutwfc = $encut
+!
+if [ $two_dimentional -eq 1 ]
+then
+cat >>in<<!
+   assume_isolated='2D'
+!
+fi
+if [ $spin -ne 0 ]
+then
+cat ./00kgrids/spin_info >>in
+fi
+if [ $soc -ne 0 ]
+then
+cat >>in<<!
+   nspin=4
+   noncolin=.TRUE.
+   constrained_magnetization='none'
+   lspinorb=.TRUE.
+!
+fi
+cat >>in<<!
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-8
+   mixing_mode = 'plain'
+   mixing_beta = 0.7
+   mixing_ndim = 8
+   diagonalization = 'david'
+   diago_david_ndim = 4
+   diago_full_acc = .true.
+   startingwfc = 'random'
+/
+!
+cat ./00kgrids/cell >>in
+cat ./00kgrids/kp3 >>in
+#########
+cat >pp.in<<!
+&input_pw2bgw
+   prefix = 'pwscf'
+   real_or_complex = $real_or_complex
+   wfng_flag = .true.
+   wfng_file = 'WFNq'
+   wfng_kgrid = .true.
+   wfng_nk1 = ${kgrids_corse[0]}
+   wfng_nk2 = ${kgrids_corse[1]}
+   wfng_nk3 = ${kgrids_corse[2]}
+   wfng_dk1 = $kc_a
+   wfng_dk2 = $kc_b
+   wfng_dk3 = $kc_c
+/
+!
+mv in pp.in ./03wfnq
+cd 03wfnq
+mkdir pwscf.save
+cd pwscf.save
+ln -s ../../01scf/pwscf.save/$ChargeDensity ./
+ln -s ../../01scf/pwscf.save/$datafile ./
+cd ../../
+fi
+
+if [ -d "04wfn_co" ]; then
+echo "##########Preparing inputs for 04wfn_co#############"
+cat >in<<!
+&control
+   calculation = 'bands'
+   restart_mode = 'from_scratch'
+   wf_collect = .true.
+   outdir = './'
+   wfcdir = './'
+   pseudo_dir = $pseudo_dir   
+/
+&system
+   ibrav = 0
+   nat = $number_of_atoms 
+   ntyp = $number_of_atom_types
+   nbnd = $nbands_wfn_co
+   ecutwfc = $encut
+!
+if [ $two_dimentional -eq 1 ]
+then
+cat >>in<<!
+   assume_isolated='2D'
+!
+fi
+if [ $spin -ne 0 ]
+then
+cat ./00kgrids/spin_info >>in
+fi
+if [ $soc -ne 0 ]
+then
+cat >>in<<!
+   nspin=4
+   noncolin=.TRUE.
+   constrained_magnetization='none'
+   lspinorb=.TRUE.
+!
+fi
+cat >>in<<!
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-8
+   mixing_mode = 'plain'
+   mixing_beta = 0.7
+   mixing_ndim = 8
+   diagonalization = 'david'
+   diago_david_ndim = 4
+   diago_full_acc = .false.
+   startingwfc = 'random'
+/
+!
+cat ./00kgrids/cell >>in
+cat ./00kgrids/kp4 >>in
+#########
+cat >pp.in<<!
+&input_pw2bgw
+   prefix = 'pwscf'
+   real_or_complex = $real_or_complex
+   wfng_flag = .true.
+   wfng_file = 'WFN_co'
+   wfng_kgrid = .true.
+   wfng_nk1 = ${kgrids_corse[0]}
+   wfng_nk2 = ${kgrids_corse[1]}
+   wfng_nk3 = ${kgrids_corse[2]}
+   wfng_dk1 = 0.0
+   wfng_dk2 = 0.0
+   wfng_dk3 = 0.0
+   rhog_flag = .true.
+   rhog_file = 'RHO'
+   vxcg_flag = .false.
+   vxcg_file = 'VXC'
+   vxc_flag = .true.
+   vxc_file = 'vxc.dat'
+   vxc_diag_nmin = 1
+   vxc_diag_nmax = $nbands_wfn_co
+   vxc_offdiag_nmin = 0
+   vxc_offdiag_nmax = 0
+/
+!
+mv in pp.in ./04wfn_co
+cd 04wfn_co
+mkdir pwscf.save
+cd pwscf.save
+ln -s ../../01scf/pwscf.save/$ChargeDensity ./
+ln -s ../../01scf/pwscf.save/$datafile ./
+cd ../../
+fi
+
+if [ -d "05wfn_fi" ]; then
+echo "##########Preparing inputs for 05wfn_fi#############"
+cat >in<<!
+&control
+   calculation = 'bands'
+   restart_mode = 'from_scratch'
+   wf_collect = .true.
+   outdir = './'
+   wfcdir = './'
+   pseudo_dir = $pseudo_dir   
+/
+&system
+   ibrav = 0
+   nat = $number_of_atoms 
+   ntyp = $number_of_atom_types
+   nbnd = $nbands_wfn_fi
+   ecutwfc = $encut
+!
+if [ $two_dimentional -eq 1 ]
+then
+cat >>in<<!
+   assume_isolated='2D'
+!
+fi
+if [ $spin -ne 0 ]
+then
+cat ./00kgrids/spin_info >>in
+fi
+if [ $soc -ne 0 ]
+then
+cat >>in<<!
+   nspin=4
+   noncolin=.TRUE.
+   constrained_magnetization='none'
+   lspinorb=.TRUE.
+!
+fi
+cat >>in<<!
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-6
+   mixing_mode = 'plain'
+   mixing_beta = 0.7
+   mixing_ndim = 8
+   diagonalization = 'david'
+   diago_david_ndim = 4
+   diago_full_acc = .false.
+   startingwfc = 'random'
+/
+!
+cat ./00kgrids/cell >>in
+cat ./00kgrids/kp5 >>in
+#########
+cat >pp.in<<!
+&input_pw2bgw
+   prefix = 'pwscf'
+   real_or_complex = $real_or_complex
+   wfng_flag = .true.
+   wfng_file = 'WFN_fi'
+   wfng_kgrid = .true.
+   wfng_nk1 = ${kgrids_fine[0]}
+   wfng_nk2 = ${kgrids_fine[1]}
+   wfng_nk3 = ${kgrids_fine[2]}
+   wfng_dk1 = 0.0
+   wfng_dk2 = 0.0
+   wfng_dk3 = 0.0
+/
+!
+mv in pp.in ./05wfn_fi
+cd 05wfn_fi
+mkdir pwscf.save
+cd pwscf.save
+ln -s ../../01scf/pwscf.save/$ChargeDensity ./
+ln -s ../../01scf/pwscf.save/$datafile ./
+cd ../../
+fi
+
+if [ -d "06wfnq_fi" ]; then
+echo "##########Preparing inputs for 06wfnq_fi#############"
+cat >in<<!
+&control
+   calculation = 'bands'
+   restart_mode = 'from_scratch'
+   wf_collect = .true.
+   outdir = './'
+   wfcdir = './'
+   pseudo_dir = $pseudo_dir   
+/
+&system
+   ibrav = 0
+   nat = $number_of_atoms 
+   ntyp = $number_of_atom_types
+   nbnd = $nbands_wfnq_fi
+   ecutwfc = $encut
+!
+if [ $two_dimentional -eq 1 ]
+then
+cat >>in<<!
+   assume_isolated='2D'
+!
+fi
+if [ $spin -ne 0 ]
+then
+cat ./00kgrids/spin_info >>in
+fi
+if [ $soc -ne 0 ]
+then
+cat >>in<<!
+   nspin=4
+   noncolin=.TRUE.
+   constrained_magnetization='none'
+   lspinorb=.TRUE.
+!
+fi
+cat >>in<<!
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-6
+   mixing_mode = 'plain'
+   mixing_beta = 0.7
+   mixing_ndim = 8
+   diagonalization = 'david'
+   diago_david_ndim = 4
+   diago_full_acc = .false.
+   startingwfc = 'random'
+/
+!
+cat ./00kgrids/cell >>in
+cat ./00kgrids/kp6 >>in
+#########
+cat >pp.in<<!
+&input_pw2bgw
+   prefix = 'pwscf'
+   real_or_complex = $real_or_complex
+   wfng_flag = .true.
+   wfng_file = 'WFNq_fi'
+   wfng_kgrid = .true.
+   wfng_nk1 = ${kgrids_fine[0]}
+   wfng_nk2 = ${kgrids_fine[1]}
+   wfng_nk3 = ${kgrids_fine[2]}
+   wfng_dk1 = $kf_a
+   wfng_dk2 = $kf_b
+   wfng_dk3 = $kf_c
+/
+!
+mv in pp.in ./06wfnq_fi
+cd 06wfnq_fi
+mkdir pwscf.save
+cd pwscf.save
+ln -s ../../01scf/pwscf.save/$ChargeDensity ./
+ln -s ../../01scf/pwscf.save/$datafile ./
+cd ../../
+fi
+
+if [ -d "07wannier" ]; then
+echo "##########Preparing inputs for 07wannier#############"
+cat >in<<!
+&control
+   calculation = 'bands'
+   restart_mode = 'from_scratch'
+   wf_collect = .true.
+   outdir = './'
+   wfcdir = './'
+   pseudo_dir = $pseudo_dir   
+/
+&system
+   ibrav = 0
+   nat = $number_of_atoms 
+   ntyp = $number_of_atom_types
+   nbnd = $nbands_wannier
+   ecutwfc = $encut
+!
+if [ $two_dimentional -eq 1 ]
+then
+cat >>in<<!
+   assume_isolated='2D'
+!
+fi
+if [ $spin -ne 0 ]
+then
+cat ./00kgrids/spin_info >>in
+fi
+if [ $soc -ne 0 ]
+then
+cat >>in<<!
+   nspin=4
+   noncolin=.TRUE.
+   constrained_magnetization='none'
+   lspinorb=.TRUE.
+!
+fi
+cat >>in<<!
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-7
+   mixing_mode = 'plain'
+   mixing_beta = 0.7
+   mixing_ndim = 8
+   diagonalization = 'david'
+   diago_david_ndim = 4
+   diago_full_acc = .false.
+   startingwfc = 'random'
+/
+!
+cat ./00kgrids/cell >>in
+cat ./00kgrids/kp7 >>in
+######
+cat >pwscf.pw2wan<<!
+&inputpp
+  outdir     =  './'
+  prefix     =  'pwscf'
+  seedname   =  'pwscf'
+  write_amn  =  .true.
+  write_mmn  =  .true.
+/
+!
+cp ./00kgrids/pwscf.win .
+mv pwscf.pw2wan pwscf.win in ./07wannier
+cd 07wannier
+mkdir pwscf.save
+cd pwscf.save
+ln -s ../../01scf/pwscf.save/$ChargeDensity ./
+ln -s ../../01scf/pwscf.save/$datafile ./
+cd ../../
+fi
+
+
+if [ -d "08bands" ]; then
+echo "##########Preparing inputs for 08bands#############"
+cat >in<<!
+&control
+   calculation = 'bands'
+   restart_mode = 'from_scratch'
+   wf_collect = .true.
+   outdir = './'
+   wfcdir = './'
+   pseudo_dir = $pseudo_dir   
+/
+&system
+   ibrav = 0
+   nat = $number_of_atoms 
+   ntyp = $number_of_atom_types
+   nbnd = $nbands_band_structure
+   ecutwfc = $encut
+!
+if [ $two_dimentional -eq 1 ]
+then
+cat >>in<<!
+   assume_isolated='2D'
+!
+fi
+if [ $spin -ne 0 ]
+then
+cat ./00kgrids/spin_info >>in
+fi
+if [ $soc -ne 0 ]
+then
+cat >>in<<!
+   nspin=4
+   noncolin=.TRUE.
+   constrained_magnetization='none'
+   lspinorb=.TRUE.
+!
+fi
+cat >>in<<!
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-8
+   mixing_mode = 'plain'
+   mixing_beta = 0.7
+   mixing_ndim = 8
+   diagonalization = 'david'
+   diago_david_ndim = 4
+   diago_full_acc = .false.
+   startingwfc = 'random'
+/
+!
+cat ./00kgrids/cell >>in
+cat ./00kgrids/kp8 >>in
+#######
+cat >pp.in<<!
+&input_pw2bgw
+   prefix = 'pwscf'
+   real_or_complex = $real_or_complex
+   wfng_flag = .true.
+   wfng_file = 'WFN_fi'
+/
+!
+cat >bands.inp<<!
+&bands
+prefix='pwscf',
+outdir='./'
+filband='band.dat'
+/
+!
+mv bands.inp pp.in in ./08bands
+cd 08bands
+mkdir pwscf.save
+cd pwscf.save
+ln -s ../../01scf/pwscf.save/$ChargeDensity ./
+ln -s ../../01scf/pwscf.save/$datafile ./
+cd ../
+fi
+echo "All the DFT input files you want are prepared. Please carefully check everything is right before the submittion!"

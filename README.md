@@ -1,8 +1,11 @@
 # qe_bgw_kit
 
 This is a shell script, which is used to automatically create QE-BerkelyGW input files.
+
 It requires input files: input_qe_bgw and POSCAR (see examples)
+
 It can generate DFT dirs: 01scf, 02wfn, 03wfnq, 04wfn_co, 05wfn_fi, 06wfnq_fi, 07wannier, 08bands and 00kgrids (this folder also contains a lot of intermediate output information)
+
 It can generate BGW dirs: eps eps_bse sigma kernel bse intep intep_wannier
 
 poscar_qe                           ! transfer POSCAR to QE format
@@ -20,17 +23,23 @@ mismatch_eig.py                     ! match the mismatch between pwscf_DFTGW.eig
 You need modify all the environment variables in the install.sh, and some of the PBS header in ./src/PBE*
 
 @cluster: chmod +x install.sh
+
 @cluster: ./install.sh
+
 @cluster: echo "export PATH="$PWD/bin:$PATH"" >>~/.bashrc
+
 @cluster: source ~/.bashrc
 
 ######################to lear how to run the shell script, please:################################
 @cluster: cd example
+
 @cluster: cd BN_monolayer
 
 @cluster: qe_bgw_prepare    !prepare QE and BGW inputs
+
 or 
 @cluster: qe_prepare        !only prepare QE inputs
+
 or 
 @cluster: bgw_prepare       !only prepare BGW inputs, need do qe_prepare firstly.
 

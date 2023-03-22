@@ -1,0 +1,151 @@
+#!/bin/bash
+
+echo "I am cleaning your tmp files..."
+
+pp=$PWD
+
+to_clean=`echo $*`
+declare -A dicts
+dicts=([0]="all" [1]="vasp" [11]="vasp_all" [2]="qe" [22]="qe_all" [3]="bgw" [33]="bgw_all" [4]="qe_bgw" [5]="others")
+
+if [ -z "$to_clean" ]; then
+  echo "please enter:\
+  [0]="all" [1]="vasp" [11]="vasp_all" [2]="qe" [22]="qe_all" [3]="bgw" [33]="bgw_all" [4]="qe_bgw" [5]="others" \
+  to cleanup"
+  read -p "Enter: " to_clean
+  
+  if [ -z "$to_clean" ]; then
+    echo "Warning: Don't have inputs. \
+        So, I'm going to cleaning all tmp files!"
+    to_clean='all'
+  fi
+fi
+export cleanupvasp="rm -r *err *out core.* vaspout.h5 CHG DOSCAR EIGENVAL IBZKPT OSZICAR PCDAT REPORT vasprun.xml XDATCAR "
+export cleanupvasp_all="rm -r *err *out core.* vaspout.h5 CHG CHGCAR DOSCAR EIGENVAL IBZKPT OSZICAR OUTCAR PCDAT PROCAR REPORT vasprun.xml WAVECAR XDATCAR "
+export cleanupqe="rm -r *err *out core.* RHO WFN* vxc* VXC pwscf.xml *wfc* input_tmp.in CRASH "
+export cleanupbgw="rm -r *err *out core.* exciton_* dvmat_norm.dat eigenvectors.h5 checkbz.log time bsemat* bsexmat* bsedmat* chi_converge.dat eps0mat* epsmat* epsilon.log bandstructure.dat dcmat_norm.dat dtmat* eigenvalues* epsdiag.dat eqp.dat eqp_q.dat vmtxel "
+export cleanupqe_bgw="rm -r *err *out core.* DFT eps eps_bse sigma kernel bse intep intep_wannier tmp log* prepare* "
+export cleanupothers="rm -r *err *out core.* "]
+
+if [ to_clean == 22 ];then
+if [ -d "01scf" ]; then
+cd 01scf
+$cleanupqe >/dev/null 2>&1
+cd pwscf.save
+$cleanupqe >/dev/null 2>&1
+cd $pp
+fi 
+if [ -d "02wfn" ]; then
+cd 02wfn
+$cleanupqe >/dev/null 2>&1
+cd pwscf.save
+$cleanupqe >/dev/null 2>&1
+cd $pp
+fi 
+if [ -d "03wfnq" ]; then
+cd 03wfnq
+$cleanupqe >/dev/null 2>&1
+cd pwscf.save
+$cleanupqe >/dev/null 2>&1
+cd $pp
+fi 
+if [ -d "04wfn_co" ]; then
+cd 04wfn_co
+$cleanupqe >/dev/null 2>&1
+cd pwscf.save
+$cleanupqe >/dev/null 2>&1
+cd $pp
+fi 
+if [ -d "05wfn_fi" ]; then
+cd 05wfn_fi
+$cleanupqe >/dev/null 2>&1
+cd pwscf.save
+$cleanupqe >/dev/null 2>&1
+cd $pp
+fi 
+if [ -d "06wfnq_fi" ]; then
+cd 06wfnq_fi
+$cleanupqe >/dev/null 2>&1
+cd pwscf.save
+$cleanupqe >/dev/null 2>&1
+cd $pp
+fi 
+if [ -d "07wannier" ]; then
+cd 07wannier
+$cleanupqe >/dev/null 2>&1
+cd pwscf.save
+$cleanupqe >/dev/null 2>&1
+cd $pp
+fi 
+if [ -d "08band" ]; then
+cd 08band
+$cleanupqe >/dev/null 2>&1
+cd pwscf.save
+$cleanupqe >/dev/null 2>&1
+cd $pp
+fi 
+
+elif [ to_clean == 33 ];then
+if [ -d "eps" ]; then
+cd eps
+$cleanupbgw >/dev/null 2>&1
+cd $pp
+fi 
+if [ -d "eps_bse" ]; then
+cd eps_bse
+$cleanupbgw >/dev/null 2>&1
+cd $pp
+fi 
+if [ -d "sigma" ]; then
+cd sigma
+$cleanupbgw >/dev/null 2>&1
+cd $pp
+fi 
+if [ -d "kernel" ]; then
+cd kernel
+$cleanupbgw >/dev/null 2>&1
+cd $pp
+fi
+if [ -d "bse" ]; then
+cd bse
+$cleanupbgw >/dev/null 2>&1
+cd $pp
+fi 
+if [ -d "intep" ]; then
+cd intep
+$cleanupbgw >/dev/null 2>&1
+cd $pp
+fi
+if [ -d "intep_wannier" ]; then
+cd intep
+$cleanupbgw >/dev/null 2>&1
+cd $pp
+fi
+
+elif [ to_clean == 'all' ];then
+$cleanupvasp_all >/dev/null 2>&1
+$cleanupqe >/dev/null 2>&1
+$cleanupqe_all >/dev/null 2>&1
+$cleanupbgw >/dev/null 2>&1
+$cleanupbgw_all >/dev/null 2>&1
+$cleanupqe_bgw >/dev/null 2>&1
+
+else
+for i in $to_clean
+do
+  if [ ${dicts[$i]} == "vasp" ];then
+  $cleanupvasp  >/dev/null 2>&1
+  elif [ ${dicts[$i]} == "vasp_all" ];then
+  $cleanupvasp_all >/dev/null 2>&1
+  elif [ ${dicts[$i]} == "qe" ];then
+  $cleanupqe >/dev/null 2>&1
+  elif [ ${dicts[$i]} == "bgw" ];then
+  $cleanupbgw >/dev/null 2>&1
+  elif [ ${dicts[$i]} == "qe_bgw" ];then
+  $cleanupqe_bgw >/dev/null 2>&1
+  fi
+  echo cleanup${dicts[$i]}
+done
+
+fi
+echo "Finished!"

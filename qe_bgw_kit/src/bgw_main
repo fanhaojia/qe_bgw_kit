@@ -10,8 +10,8 @@ cd tmp
 cp ../DFT/00kgrids/kp2 ./kp
 nkline=`awk '{print NR}' kp |tail -n1`
 
-echo 'begin qpoints'>>qpoints
-echo 'begin kpoints'>>kpoints
+echo 'begin qpoints'>qpoints
+echo 'begin kpoints'>kpoints
 
 qx=`sed -n "3p" kp |awk '{print $1}'`
 qy=`sed -n "3p" kp |awk '{print $2}'`

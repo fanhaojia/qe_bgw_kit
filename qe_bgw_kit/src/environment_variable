@@ -17,5 +17,5 @@ export BGW_BIN=/share/opt/apps/BGW/3.0.1/2017/bin
 export QE_BIN=/share/opt/apps/qe/7.1/2017/bin
 
 pseudo_dir=/share/opt/apps/qe/pseudo_qe/dojo/sr
-pseudo_dir_soc=/share/opt/apps/qe/pseudo_qe/dojo/fr
+pseudo_dir_soc="'/share/opt/apps/qe/pseudo_qe/dojo/fr'"
 export PATH=/usr/bin:$PATH

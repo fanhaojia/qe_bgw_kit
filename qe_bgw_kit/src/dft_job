@@ -201,6 +201,7 @@ echo >>sub.sh
 echo ""$AA"MPI_exe" $PW_exe_nk8  >>sub.sh
 echo 'wait' >>sub.sh
 echo ""$AA"MPI_exe" $PW2BGW_exe  >>sub.sh
+echo "mpirun -n 8 /share/opt/apps/qe/7.1/2017/bin/bands.x <bands.inp> out" >>sub.sh
 echo 'wait' >>sub.sh
 echo "rm ./*wfc*" >>sub.sh
 echo "cd  pwscf.save" >>sub.sh

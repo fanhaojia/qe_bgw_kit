@@ -18,7 +18,7 @@ echo "#!/usr/bin/bash" >sub.sh
 echo "#BSUB -J eps" >>sub.sh
 cat $KIT_PATH/src/PBS_$Speed_eps >>sub.sh
 echo >>sub.sh
-echo "start time">time
+echo "echo "start time">time" >>sub.sh
 cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
 cat $KIT_PATH/src/$BGW_code >>sub.sh
 
@@ -45,7 +45,7 @@ echo "#!/usr/bin/bash" >sub.sh
 echo "#BSUB -J eps_bse" >>sub.sh
 cat $KIT_PATH/src/PBS_$Speed_eps >>sub.sh
 echo >>sub.sh
-echo "start time">time
+echo "echo "start time">time" >>sub.sh
 cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
 cat $KIT_PATH/src/$BGW_code >>sub.sh
 
@@ -72,7 +72,7 @@ echo "#!/usr/bin/bash" >sub.sh
 echo "#BSUB -J sigma" >>sub.sh
 cat $KIT_PATH/src/PBS_$Speed_sigma >>sub.sh
 echo >>sub.sh
-echo "start time">time
+echo "echo "start time">time" >>sub.sh
 cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
 cat $KIT_PATH/src/$BGW_code >>sub.sh
 
@@ -103,7 +103,7 @@ echo "#!/usr/bin/bash" >sub.sh
 echo "#BSUB -J kernel" >>sub.sh
 cat $KIT_PATH/src/PBS_$Speed_kernel >>sub.sh
 echo >>sub.sh
-echo "start time">time
+echo "echo "start time">time" >>sub.sh
 cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
 cat $KIT_PATH/src/$BGW_code >>sub.sh
 
@@ -132,7 +132,7 @@ echo "#!/usr/bin/bash" >sub.sh
 echo "#BSUB -J bse" >>sub.sh
 cat $KIT_PATH/src/PBS_$Speed_bse >>sub.sh
 echo >>sub.sh
-echo "start time">time
+echo "echo "start time">time" >>sub.sh
 cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
 cat $KIT_PATH/src/$BGW_code >>sub.sh
 

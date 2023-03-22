@@ -10,8 +10,8 @@ export KIT_PATH=$PWD
 export BGW_BIN=/share/opt/apps/BGW/3.0.1/2017/bin
 export QE_BIN=/share/opt/apps/qe/7.1/2017/bin
 export PYTHON_PATH=/share/opt/miniconda3/bin
-pseudo_dir='/share/opt/apps/qe/pseudo_qe/dojo/sr'
-pseudo_dir_soc='/share/opt/apps/qe/pseudo_qe/dojo/fr'
+pseudo_dir=""'/share/opt/apps/qe/pseudo_qe/dojo/sr'""
+pseudo_dir_soc=""'/share/opt/apps/qe/pseudo_qe/dojo/fr'""
 
 cat >./src/environment_variable<<!
 #!/bin/bash
@@ -33,7 +33,7 @@ export BGW_BIN=$BGW_BIN
 export QE_BIN=$QE_BIN
 
 pseudo_dir=$pseudo_dir
-pseudo_dir_soc=$pseudo_dir_soc
+pseudo_dir_soc="'/share/opt/apps/qe/pseudo_qe/dojo/fr'"
 export PATH=/usr/bin:$PP
 !
 

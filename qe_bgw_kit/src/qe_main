@@ -152,8 +152,8 @@ $tools_bin/kmesh.pl ${kgrids_corse[0]} ${kgrids_corse[1]} ${kgrids_corse[2]} >kp
 
 echo "##########generate kgrids_band_structure#############"
 nk=`sed -n "2p" kpath |awk '{print $1}'`
-sed -n "1p" kpath >kgrids_band_structure
-sed -n "2p" kpath >>kgrids_band_structure
+sed -n "1p" kpath >kp8
+sed -n "2p" kpath >>kp8
 for((i=1;i<=$nk;i++));
 do
 kline=`expr $i + 2`
@@ -215,11 +215,11 @@ export ChargeDensity=charge-density.xml
 fi
 export datafile=data-file-schema.xml
 
-export pseudo_dir=$pseudo_dir
-if [ $soc -eq 1 ]
-then
-export pseudo_dir=$pseudo_dir_soc
-fi
+#export pseudo_dir=$pseudo_dir
+#if [ $soc -eq 1 ]
+#then
+#export pseudo_dir=$pseudo_dir_soc
+#fi
 
 if [ -d "01scf" ]; then
 echo "##########Preparing inputs for 01scf#############"
@@ -501,7 +501,7 @@ cat >pp.in<<!
    wfng_dk3 = 0.0
    rhog_flag = .true.
    rhog_file = 'RHO'
-   vxcg_flag = .false.
+   vxcg_flag = .true.
    vxcg_file = 'VXC'
    vxc_flag = .true.
    vxc_file = 'vxc.dat'

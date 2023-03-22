@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+#coding: utf-8
+
+import numpy as np
+import matplotlib as mpl
+#mpl.use('Agg')
+import matplotlib.pyplot as plt
+
+def to_mathrm(s):
+    return r'$\mathrm{%s}$'%(s)
+def plot_rpa(xlim=[0,5], fname='absorption_eh.dat', ylim=None, yticks=None, figure_size=[6,3], gap_line=None):
+    data=np.loadtxt(fname)
+    n=len(data)
+    omega=[]
+    absop=[]
+    for i in range(n):
+        omega.append(data[i][0])
+        absop.append(data[i][1])
+
+    fig, ax = plt.subplots(figsize=(figure_size[0], figure_size[1]))
+    p1, = plt.plot(omega, absop, ls='-', color='k', lw=2, zorder=2)
+    
+    for p in gap_line:
+        plt.axvline(p, color='#cccccc', ls='--')
+    
+    plt.xlim(xlim[0], xlim[1])
+    if ylim is not None:
+        plt.ylim(ylim[0], ylim[1])
+    if yticks is not None:
+        plt.yticks(yticks, fontsize =14)
+    plt.xticks(fontsize =14)
+    
+    plt.tick_params(axis='both',direction='in')
+    #ax.xaxis.set_major_formatter(plt.NullFormatter())
+    plt.xlabel('Energy (eV)',fontsize=16)
+    plt.ylabel(r'$\epsilon_{2} (\omega)$',fontsize=18)
+    plt.subplots_adjust(top=0.6,bottom=0.3,left=0.16,right=0.96,hspace=0.1,wspace=0.1)
+    plt.savefig('absorp_bse.png',dpi=600)
+    #plt.legend([p1, p2], ['BSE', 'RPA'], loc='upper left', fontsize=18,shadow=False,frameon=False)
+    plt.show()
+    
+    
+plot_rpa(xlim=[0,6], ylim=None, yticks=None, gap_line=[3.968])
+
+

@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+#coding: utf-8
+
+import numpy as np
+import matplotlib as mpl
+#mpl.use('Agg')
+import matplotlib.pyplot as plt
+
+def to_mathrm(s):
+    return r'$\mathrm{%s}$'%(s)
+def plot_rpa(xlim=[0,5], fname1='absorption_noeh.dat', fname2='absorption_eh.dat', ylim=None, yticks=None, figure_size=[6,3], gap_line=None):
+    data1=np.loadtxt(fname1)
+    data2=np.loadtxt(fname2)
+    n1=len(data1)
+    n2=len(data2)
+    omega1=[]
+    absop1=[]
+    omega2=[]
+    absop2=[]
+    for i in range(n1):
+        omega1.append(data1[i][0])
+        absop1.append(data1[i][1])
+    for i in range(n2):
+        omega2.append(data2[i][0])
+        absop2.append(data2[i][1])
+        
+    fig, ax = plt.subplots(figsize=(figure_size[0], figure_size[1]))
+    p1, = plt.plot(omega1, absop1, ls='-', color='r', lw=2, zorder=2)
+    p2, = plt.plot(omega2, absop2, ls='-', color='k', lw=2, zorder=2)
+    
+    for p in gap_line:
+        plt.axvline(p, color='#cccccc', ls='--')
+    
+    plt.xlim(xlim[0], xlim[1])
+    if ylim is not None:
+        plt.ylim(ylim[0], ylim[1])
+    if yticks is not None:
+        plt.yticks(yticks, fontsize =14)
+    plt.xticks(fontsize =14)
+    
+    plt.tick_params(axis='both',direction='in')
+    #ax.xaxis.set_major_formatter(plt.NullFormatter())
+    plt.xlabel('Energy (eV)',fontsize=14)
+    plt.ylabel(r'$\epsilon_{2} (\omega)$',fontsize=14)
+    plt.subplots_adjust(top=0.6,bottom=0.3,left=0.16,right=0.96,hspace=0.1,wspace=0.1)
+    plt.savefig('absorp_rpa_bse.png',dpi=600)
+    plt.legend([p1, p2], ['RPA', 'BSE'], loc='upper right', fontsize=12,shadow=False,frameon=False)
+    plt.show()
+    
+    
+plot_rpa(xlim=[0,6], ylim=None, yticks=None, gap_line=[2.68])
+
+

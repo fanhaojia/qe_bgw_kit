@@ -1,0 +1,140 @@
+
+###################Preparing DFT job.sh##############
+DFT_code=paratec
+Compiler_dft=compiler
+
+cd $main_dft
+
+if [ -d "01scf" ]; then
+echo "##########Preparing job.sh for 01scf#############"
+cd $main_dft/01scf
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 01scf" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_scf >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/$DFT_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+echo >>sub.sh
+echo "vxc=`awk '/vxc0/ {print $2}' OUT |tail -n -1`" >>sub.sh
+echo "echo $vxc >>../wfnselect.inp"  >>sub.sh
+
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "02wfn" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/02wfn
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 02wfn" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wfn >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/$DFT_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+echo >>sub.sh
+echo "ln -s ../../input_paratec_bgw .">>sub.sh
+echo "bgw_prepare_paratec">>sub.sh
+echo >>sub.sh
+
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "03wfnq" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/03wfnq
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 03wfnq" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wfnq >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/$DFT_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "03wfnq1" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/03wfnq1
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 03wfnq1" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wfnq >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/$DFT_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "03wfnq2" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/03wfnq2
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 03wfnq2" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wfnq >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/$DFT_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "03wfnq3" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/03wfnq3
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 03wfnq3" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wfnq >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/$DFT_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "03wfnq4" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/03wfnq4
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 03wfnq4" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wfnq >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/$DFT_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+chmod +x sub.sh
+cd ../
+fi
+
+if [ -d "04wfn_co" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cd $main_dft/04wfn_co
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J 04wfn_co" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_wfn_co >>sub.sh
+cat $KIT_PATH/src/$Compiler_dft >>sub.sh
+cat $KIT_PATH/src/$DFT_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe" $PW_exe  >>sub.sh
+echo 'wait' >>sub.sh
+chmod +x sub.sh
+cd ../
+fi
+
+cd $main_dir
+echo "All the DFT job.sh you want are prepared. Please carefully check and modify before the submittion!"
+
+

@@ -1,6 +1,6 @@
 ulimit -s unlimited
 ulimit -l unlimited
-module load compiler/intel/2017_up7 hdf5
+module load compiler/intel/2017_up7
 export MKL_DEBUG_CPU_TYPE=5
 export MKL_CBWR=AVX2
 export FI_PROVIDER=mlx

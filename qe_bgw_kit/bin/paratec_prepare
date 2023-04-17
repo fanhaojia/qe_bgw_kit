@@ -1,0 +1,17 @@
+#!/bin/bash
+export KIT_PATH=/home/jiafanhao/software/bin/qe_bgw_kit
+echo "################Started the prepartions##########"
+cat $KIT_PATH/src/environment_variable >prepare_paratec.sh
+cat input_paratec_bgw >>prepare_paratec.sh
+
+cat $KIT_PATH/src/paratec >>prepare_paratec.sh
+
+cat $KIT_PATH/src/paratec_main >>prepare_paratec.sh
+cat $KIT_PATH/src/paratec_job >>prepare_paratec.sh
+
+echo "rm *prepare* " >>prepare_paratec.sh
+
+chmod +x prepare_paratec.sh
+./prepare_paratec.sh all >log.paratec.prepare
+echo "################Finished##########"
+echo "################See log.paratec.prepare for details##########"

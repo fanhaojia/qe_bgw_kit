@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+#coding: utf-8
+import numpy as np
+import linecache
+
+def get_volume(nabc):
+    """Calculates the volume from the triple product of self.cell"""
+    b1=nabc[0];b2=nabc[1];b3=nabc[2]
+    volume = abs(np.dot(np.cross(b1, b2), b3))
+    return volume
+
+def split_line(line):
+    out=[]
+    wlist=line.split(' ')
+    for word in wlist:
+        if len(word)>0 and word != ' ' :
+            if word[-1]== '\n':
+                if len(word[:-1])>0 and word[:-1]!='':
+                    out.append(word[:-1])
+            else:
+                out.append(word)
+    return out 
+
+def normalize_atom_position(a):
+    if a < 0.0:
+        a=a+1
+    elif a > 1.0:
+        a=a-1
+    else:
+        a = a
+    return a
+
+def fractional_to_cartesian(xyz, abc):
+    nxyz=np.dot(xyz, abc)
+    return nxyz
+
+def cartesian_to_fractional(xyz, abc):
+    nxyz=np.dot(xyz, np.linalg.inv(abc))
+    return nxyz
+
+def read_poscar(fname='POSCAR', cartesian=False):
+    xline = linecache.getline(fname, 6)  ##count how many element in this POSCAR
+    elements=split_line(xline)
+    #print (elements)
+    xline = linecache.getline(fname, 7)  ##count how many atoms for each element in this POSCAR
+    natom=[int(i) for i in split_line(xline)]
+    #print (natom) 
+    xline = linecache.getline(fname, 8)  ##POSCAR is in Cartesian or fractional
+    poscar_type=xline[0]
+    len_block=sum(natom)+9
+    abc=[];xyz=[]
+    for i in range (len_block):
+        if i in range(3,6):
+            xline = linecache.getline(fname, i)
+            out=[float(i) for i in split_line(xline)[:3]]
+            abc.append(out)
+        elif i > 8:
+            xline = linecache.getline(fname, i)
+            a=[float(i) for i in split_line(xline)[:3]]
+            #print (a)
+            if poscar_type=='D' or poscar_type=='d':
+                for h in range(3):
+                    a[h]=normalize_atom_position(a[h])
+                    h=h+1
+                if cartesian==True:
+                    b=fractional_to_cartesian(a, abc)
+                else:
+                    b=a
+            else:
+                if cartesian==True:
+                    b=a
+                else:
+                    b=cartesian_to_fractional(a, abc)
+            xyz.append(b)
+        i=i+1
+    return natom, elements, abc, xyz
+
+
+def write_paratec_cell(natom, elements, abc, xyz, contcar='./cell', angstrom_to_bohr=1.8897259886):
+    voulme=get_volume(abc)*angstrom_to_bohr**3
+    nabc=[[0]*3 for i in range(3)];
+    for i in range(3):
+        for j in range(3):
+            nabc[i][j]="%.16f" % (abc[i][j]*angstrom_to_bohr)
+    lattice_a='coord      '+str(nabc[0][0])+'   '+str(nabc[0][1])+'   '+str(nabc[0][2])
+    lattice_b='coord      '+str(nabc[1][0])+'   '+str(nabc[1][1])+'   '+str(nabc[1][2])
+    lattice_c='coord      '+str(nabc[2][0])+'   '+str(nabc[2][1])+'   '+str(nabc[2][2])
+    tatom=sum(natom)
+    print ('lattice vector')
+    print (lattice_a)
+    print (lattice_b)
+    print (lattice_c)
+    print (elements)
+    print (natom)
+    print ('volume  ', voulme)
+    print ('Total number of atoms  ', tatom)
+    str_xyz=[]
+    for i in range(tatom):
+        sstr='coord    '+str("%.16f" % (xyz[i][0]))+'  '+str("%.16f" % (xyz[i][1]))+'  '+str("%.16f" % (xyz[i][2]))
+        str_xyz.append(sstr)
+    fc=open(contcar,'w')
+    fc=open(contcar,'a+')
+    fc.writelines('begin coordinates')
+    fc.write("\n")
+    k=0
+    for i in range(len(natom)):
+        lie0='newtype  '+elements[i]+'  0.0100'
+        fc.writelines(lie0)
+        fc.write("\n")
+        if i ==0:
+            for j in range(natom[i]):
+                fc.writelines(str_xyz[j])
+                fc.write("\n")
+            k=natom[i]
+        else:
+            for j in range(natom[i]):
+                j=k+j
+                fc.writelines(str_xyz[j])
+                fc.write("\n")
+            k=k+natom[i]
+    fc.writelines('end coordinates')
+    fc.write("\n")
+    fc.writelines('#  |  The lattice vectors in cartesian coordinates                    |')
+    fc.write("\n")
+    fc.writelines('begin latticevecs')
+    fc.write("\n")
+    fc.writelines(lattice_a)
+    fc.write("\n")
+    fc.writelines(lattice_b)
+    fc.write("\n")
+    fc.writelines(lattice_c)
+    fc.write("\n")
+    lie='volume  '+str(voulme)
+    fc.writelines(lie)
+    fc.write("\n")
+    fc.writelines('end latticevecs')
+    fc.write("\n")
+    fc.close()
+
+if __name__ == "__main__":
+    natom, elements, abc, xyz=read_poscar(fname='POSCAR', cartesian=False)
+    write_paratec_cell(natom, elements, abc, xyz, contcar='./cell', angstrom_to_bohr=1.8897259886)
+

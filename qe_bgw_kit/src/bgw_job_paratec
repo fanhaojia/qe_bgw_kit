@@ -1,0 +1,194 @@
+
+###################Preparing BGW job.sh##############
+cd $main_dir
+
+Compiler_bgw=compiler
+
+if [ $real_or_complex -eq 1 ]
+then
+BGW_code=BGW_real_1
+else 
+BGW_code=BGW_cplx_1
+fi
+
+if [ -d "eps" ]; then
+echo "##########Preparing inputs for eps#############"
+cd $main_dir/eps
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J eps" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_eps >>sub.sh
+echo >>sub.sh
+echo "echo "start time">time" >>sub.sh
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+
+echo ""$AA"MPI_exe "$AA"EPSILON_EXEC >report"  >>sub.sh
+chmod +x sub.sh
+
+echo "#!/bin/sh" >link.sh
+cat >link.sh<<!
+#!/bin/sh
+rm epsmat eps0mat* weight.dat WFN WFNq
+ln -s ../02wfn/weight.dat .
+ln -s ../02wfn/GWC ./WFN
+ln -s ../03wfnq/GWC ./WFNq
+degeneracy_check.x WFN
+!
+chmod +x link.sh
+cd $main_dir
+fi
+
+if [ -d "eps1" ]; then
+echo "##########Preparing inputs for eps#############"
+cd $main_dir/eps1
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J eps1" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_scf >>sub.sh
+echo >>sub.sh
+echo "echo "start time">time" >>sub.sh
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe "$AA"EPSILON_EXEC >report"  >>sub.sh
+echo "wait">>sub.sh
+chmod +x sub.sh
+
+echo "#!/bin/sh" >link.sh
+cat >link.sh<<!
+#!/bin/sh
+rm epsmat eps0mat* weight.dat WFN WFNq
+ln -s ../02wfn/weight.dat .
+ln -s ../02wfn/GWC ./WFN
+ln -s ../03wfnq2/GWC ./WFNq
+degeneracy_check.x WFN
+!
+chmod +x link.sh
+cd $main_dir
+fi
+
+
+if [ -d "eps2" ]; then
+echo "##########Preparing inputs for eps#############"
+cd $main_dir/eps2
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J eps2" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_scf >>sub.sh
+echo >>sub.sh
+echo "echo "start time">time" >>sub.sh
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe "$AA"EPSILON_EXEC >report"  >>sub.sh
+chmod +x sub.sh
+
+echo "#!/bin/sh" >link.sh
+cat >link.sh<<!
+#!/bin/sh
+rm epsmat eps0mat* weight.dat WFN WFNq
+ln -s ../02wfn/weight.dat .
+ln -s ../02wfn/GWC ./WFN
+ln -s ../03wfnq2/GWC ./WFNq
+degeneracy_check.x WFN
+!
+chmod +x link.sh
+cd $main_dir
+fi
+
+if [ -d "eps3" ]; then
+echo "##########Preparing inputs for eps#############"
+cd $main_dir/eps3
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J eps3" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_scf >>sub.sh
+echo >>sub.sh
+echo "echo "start time">time" >>sub.sh
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe "$AA"EPSILON_EXEC >report"  >>sub.sh
+chmod +x sub.sh
+
+echo "#!/bin/sh" >link.sh
+cat >link.sh<<!
+#!/bin/sh
+rm epsmat eps0mat* weight.dat WFN WFNq
+ln -s ../02wfn/weight.dat .
+ln -s ../02wfn/GWC ./WFN
+ln -s ../03wfnq3/GWC ./WFNq
+degeneracy_check.x WFN
+!
+chmod +x link.sh
+cd $main_dir
+fi
+
+
+if [ -d "eps4" ]; then
+echo "##########Preparing inputs for eps#############"
+cd $main_dir/eps4
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J eps4" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_scf >>sub.sh
+echo >>sub.sh
+echo "echo "start time">time" >>sub.sh
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe "$AA"EPSILON_EXEC >report"  >>sub.sh
+chmod +x sub.sh
+
+echo "#!/bin/sh" >link.sh
+cat >link.sh<<!
+#!/bin/sh
+rm epsmat eps0mat* weight.dat WFN WFNq
+ln -s ../02wfn/weight.dat .
+ln -s ../02wfn/GWC ./WFN
+ln -s ../03wfnq4/GWC ./WFNq
+degeneracy_check.x WFN
+!
+chmod +x link.sh
+cd $main_dir
+fi
+
+if [ -d "sigma" ]; then
+echo "##########Preparing inputs for sigma#############"
+cd $main_dir/sigma
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J sigma" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_sigma >>sub.sh
+echo >>sub.sh
+echo "echo "start time">time" >>sub.sh
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe "$AA"SIGMA_EXEC >report"  >>sub.sh
+echo ""$AA"EQP_SCRIPT eqp1 ./sigma_hp.log ./eqp_co.dat"  >>sub.sh
+chmod +x sub.sh
+cd $main_dir
+fi
+
+if [ -d "intep" ]; then
+echo "##########Preparing inputs for intep#############"
+cd $main_dir/intep
+echo "#!/usr/bin/bash" >sub.sh
+echo "#BSUB -J intep" >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_intep >>sub.sh
+cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
+cat $KIT_PATH/src/$BGW_code >>sub.sh
+echo >>sub.sh
+echo ""$AA"MPI_exe "$AA"INTEQP_EXEC >report"  >>sub.sh
+chmod +x sub.sh
+
+echo "#!/bin/sh" >link.sh
+cat $KIT_PATH/src/$Compiler_bgw >>link.sh
+cat >>link.sh<<!
+rm epsmat* eps0mat* WFN* sigma_hp.log eqp_co.dat bsemat.h5
+ln -s ../DFT/04wfn_co/WFN_co ./WFN_co
+ln -s ../DFT/04wfn_fine/WFN_fi ./WFN_fi
+cp ../sigma/eqp_co.dat .
+degeneracy_check.x WFN_co
+!
+chmod +x link.sh
+cd $main_dir
+fi
+
+echo "All the BGW job.sh you want are prepared. Please carefully check and modify before the submittion!"

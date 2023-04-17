@@ -48,6 +48,6 @@ def plot_rpa(xlim=[0,5], fname1='absorption_noeh.dat', fname2='absorption_eh.dat
     plt.show()
     
     
-plot_rpa(xlim=[0,6], ylim=None, yticks=None, gap_line=[2.68])
+plot_rpa(xlim=[0,4], ylim=None, yticks=None, gap_line=[1.0])
 
 

@@ -1,4 +1,5 @@
 #!/bin/bash
+
 AA="$"
 KK="$AA"KIT_PATH
 PP="$AA"PATH
@@ -27,7 +28,6 @@ export use_poscar=.True.                   #using POSCAR in format of VASP to ge
 ##########You must set the following enivronmental varies ##############
 module load compiler/intel/2017_up7 hdf5
 export KIT_PATH=$PWD
-export PATH=$PYTHON_PATH
 export tools_bin=$PWD/bin
 export BGW_BIN=$BGW_BIN
 export QE_BIN=$QE_BIN
@@ -35,6 +35,7 @@ export QE_BIN=$QE_BIN
 pseudo_dir=$pseudo_dir
 pseudo_dir_soc="'/share/opt/apps/qe/pseudo_qe/dojo/fr'"
 export PATH=/usr/bin:$PP
+export PATH=$PYTHON_PATH:$PP
 !
 
 cat > ./src/compiler<<!

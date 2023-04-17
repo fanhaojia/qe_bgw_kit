@@ -1,0 +1,8 @@
+#BSUB -o %J.out
+#BSUB -e %J.err
+#BSUB -q normal
+#BSUB -n 248
+#BSUB -R "span[ptile=124]"
+##BSUB -R "span[hosts=1]"
+##BSUB -m n104
+

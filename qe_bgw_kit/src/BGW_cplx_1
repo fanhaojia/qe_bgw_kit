@@ -1,0 +1,9 @@
+export BGW_BIN=/share/opt/apps/BGW/1.0.4-2d-3p/bin
+EPSILON_EXEC="$BGW_BIN/epsilon.cplx.x"
+SIGMA_EXEC="$BGW_BIN/sigma.cplx.x"
+KERNEL="$BGW_BIN/kernel.cplx.x"
+ABSORPTION="$BGW_BIN/absorption.cplx.x"
+EQP_SCRIPT="$BGW_BIN/eqp.py"
+INTEQP_EXEC="$BGW_BIN/inteqp.cplx.x"
+SIG2WAN="$BGW_BIN/sig2wan.x"
+SUM_EV="$BGW_BIN/summarize_eigenvectors.cplx.x"

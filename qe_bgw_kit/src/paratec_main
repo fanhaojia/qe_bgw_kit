@@ -1,0 +1,470 @@
+
+echo "#########################mkdir for 01scf 02wfn 03wfnq etc...#######################"
+mkdir DFT
+export main_dir=$PWD
+
+cd ./DFT
+export main_dft=$PWD
+
+ln -s ../POSCAR .
+
+to_prepare=`echo $*`
+declare -A dicts
+dicts=([1]="01scf" [4]="04wfn_co" [2]="02wfn" [20]="02wfn_shift" [3]="03wfnq" [31]="03wfnq1" [32]="03wfnq2" [33]="03wfnq3" [34]="03wfnq4")
+if [ -z "$to_prepare" ]; then
+  echo "The paratec_bgw_prepare needs inputs like: 1 4 2 20 3 31 32 33 34 or all"
+  read -p "Enter: " to_prepare
+  if [ -z "$to_prepare" ]; then
+    echo "Warning: Don't have inputs. \
+	1:01scf 4:04wfn_co 2:02wfn 3:03wfnq 20:02wfn_shift 31:03wfnq1 32:03wfnq2 33:03wfnq3 34:03wfnq4
+	So, I'm going to prepare all DFT files!"
+    to_prepare='all'
+  fi
+  echo "Ok, I am preparing files for you!"
+fi
+
+if [ $two_dimentional -eq 1 ]; then
+if [ $k_shift -eq 0 ];then
+    if [ "$to_prepare" == "all" ]; then
+        to_prepare="1 2 31 32 33 34 4"
+    fi
+else
+    if [ "$to_prepare" == "all" ]; then
+        to_prepare="1 2 20 31 32 33 34 4"
+    fi
+fi
+else 
+if [ $k_shift -eq 0 ];then
+    if [ "$to_prepare" == "all" ]; then
+        to_prepare="1 2 3 4"
+    fi
+else
+    if [ "$to_prepare" == "all" ]; then
+        to_prepare="1 2 20 3 4"
+    fi
+fi
+fi
+
+for i in $to_prepare
+do
+  mkdir ${dicts[$i]}
+  echo ${dicts[$i]}
+done
+
+###############################################00kgrids##################################################
+
+echo "#########using POSCAR to generate the cell, cell is for the input of paratec ##########"
+if [ $use_poscar ];then
+echo "###############   Preparing crystal cell by using POSCAR.    ################"
+echo "###############   A few seconds may be needed! Please wait... ################"
+$tools_bin/poscar_paratec
+echo "##############  Finished in preparing crystal cell  #############"
+fi
+
+export pseudo_dir=$pseudo_dir
+eles=`awk '/newtype/{print $2}' cell`
+
+
+if [ -d "01scf" ]; then
+echo "##########Preparing inputs for 01scf#############"
+cat >input<<!
+begin pw_jobs
+pw_job scf
+end pw_jobs
+
+# job relax
+# relax_what force
+# relax_eps_factor 0.5
+# relax_coord_factor 1.0
+relax_max_iter 0
+
+!
+echo "k_grid ${k_grid[0]} ${k_grid[1]} ${k_grid[2]}" >>input
+echo "k_grid_shift ${k_grid_shift[0]} ${k_grid_shift[1]} ${k_grid_shift[2]}" >>input
+echo " " >>input
+echo "exchange_correlation $exchange_correlation" >>input
+echo " " >>input
+echo "number_bands $nbands_scf" >>input
+echo "#number_of_spins 2" >>input
+echo "number_bands_fft 4" >>input
+echo " " >>input
+echo "# various energy cutoffs in Ry " >>input
+echo "# energy_cutoff [Ry]:  determines size of hamiltonian matrix " >>input
+echo "energy_cutoff $encut" >>input
+echo " " >>input
+echo "# defines approximately the temperature of electrons (in eV)" >>input
+echo "gaussian_smearing 0.01" >>input
+echo " " >>input
+echo "pp_format 1" >>input
+echo " " >>input
+echo "#mix_method pulay_tf" >>input
+echo "mix_method pulay_kerker" >>input
+echo "#mix_method broyden" >>input
+echo " " >>input
+echo "mixing_energy_cutoff $mixing_energy_cutoff_scf" >>input
+echo "submatrix_energy_cutoff $submatrix_energy_cutoff_scf" >>input
+echo " " >>input
+echo "diagonalization_method  Mauri" >>input
+echo "#diagonalization_method  Grassmann" >>input
+echo "#occupy_levels  fixed" >>input
+echo "#screening_type atomic" >>input
+echo " " >>input
+echo "#fermi_level 0.57803349" >>input
+echo "screening_type previous" >>input
+echo "accuracy_diag 1e-12" >>input
+echo "potential_convergence_criterion 1e-6"  >>input
+echo " " >>input
+echo "max_iter_diag 100" >>input
+echo "max_iter_diag_band 300" >>input
+echo "max_iter_scfloop 40" >>input
+echo " " >>input
+echo "# diagsafety 2.0" >>input
+echo "# output_flags dos_eigvals_cdplot_ballnstick" >>input
+echo "# gw_shift 0.01 0.01 0.01" >>input
+echo "#output_flags gwr" >>input
+echo "#output_flags neighbors" >>input
+echo "output_flags gwscreening" >>input
+echo "# lsda_u 1" >>input
+echo " " >>input
+echo " " >>input
+cat cell >>input
+echo " " >>input
+mv input 01scf
+cd 01scf
+for i in  $eles
+do 
+ln -s $pseudo_dir/${i}_POT.DAT .
+done
+cd $main_dft
+fi
+
+if [ -d "02wfn" ]; then
+echo "##########Preparing inputs for 02wfn#############"
+cat >input<<!
+begin pw_jobs
+pw_job nonselfcon
+end pw_jobs
+
+# job relax
+# relax_what force
+# relax_eps_factor 0.5
+# relax_coord_factor 1.0
+# relax_accuracy 0.0001
+relax_max_iter 0
+!
+echo "k_grid ${k_grid[0]} ${k_grid[1]} ${k_grid[2]}" >>input
+echo "k_grid_shift 0.0 0.0 0.0" >>input
+echo " " >>input
+echo "exchange_correlation $exchange_correlation" >>input
+echo " " >>input
+echo "number_bands $nbands_wfn" >>input
+echo "#number_of_spins 2" >>input
+echo "number_bands_fft 4" >>input
+echo " " >>input
+echo "# various energy cutoffs in Ry " >>input
+echo "# energy_cutoff [Ry]:  determines size of hamiltonian matrix " >>input
+echo "energy_cutoff $encut" >>input
+echo " " >>input
+echo "# defines approximately the temperature of electrons (in eV)" >>input
+echo "gaussian_smearing 0.01" >>input
+echo " " >>input
+echo "pp_format 1" >>input
+echo " " >>input
+echo "#mix_method pulay_tf" >>input
+echo "mix_method pulay_kerker" >>input
+echo "#mix_method broyden" >>input
+echo " " >>input
+echo "mixing_energy_cutoff $mixing_energy_cutoff_wfn" >>input
+echo "submatrix_energy_cutoff $submatrix_energy_cutoff_wfn" >>input
+echo " " >>input
+echo "#diagonalization_method  Mauri" >>input
+echo "diagonalization_method  Grassmann" >>input
+echo "#occupy_levels  fixed" >>input
+echo "#screening_type atomic" >>input
+echo " " >>input
+echo "#fermi_level 0.57803349" >>input
+echo "screening_type previous" >>input
+echo "accuracy_diag 1e-12" >>input
+echo "potential_convergence_criterion 1e-6"  >>input
+echo " " >>input
+echo "max_iter_diag 2" >>input
+echo "max_iter_diag_band 150" >>input
+echo "max_iter_scfloop 2" >>input
+echo " " >>input
+echo "gw_sum 1" >>input
+echo " " >>input
+echo "# diagsafety 2.0" >>input
+echo "# output_flags dos_eigvals_cdplot_ballnstick" >>input
+echo "# gw_shift 0.01 0.01 0.01" >>input
+echo "#output_flags gwr" >>input
+echo "#output_flags neighbors" >>input
+echo "#output_flags gwscreening" >>input
+if [ $real_or_complex -eq 2 ]
+then
+echo "output_flags gwc" >>input
+else
+echo "output_flags gwr" >>input
+fi
+echo "# lsda_u 1" >>input
+echo " " >>input
+echo " " >>input
+cat cell >>input
+echo " " >>input
+mv input 02wfn
+cd 02wfn
+for i in  $eles
+do 
+ln -s $pseudo_dir/${i}_POT.DAT .
+done
+ln -s ../wfnselect.inp .
+cd $main_dft
+fi
+
+if [ -d "02wfn_shift" ]; then
+echo "##########Preparing inputs for 02wfn_shift#############"
+cat >input<<!
+begin pw_jobs
+pw_job nonselfcon
+end pw_jobs
+
+# job relax
+# relax_what force
+# relax_eps_factor 0.5
+# relax_coord_factor 1.0
+# relax_accuracy 0.0001
+relax_max_iter 0
+!
+echo "k_grid ${k_grid[0]} ${k_grid[1]} ${k_grid[2]}" >>input
+echo "k_grid_shift ${k_grid_shift[0]} ${k_grid_shift[1]} ${k_grid_shift[2]}" >>input
+echo " " >>input
+echo "exchange_correlation $exchange_correlation" >>input
+echo " " >>input
+echo "number_bands $nbands_wfn" >>input
+echo "#number_of_spins 2" >>input
+echo "number_bands_fft 4" >>input
+echo " " >>input
+echo "# various energy cutoffs in Ry " >>input
+echo "# energy_cutoff [Ry]:  determines size of hamiltonian matrix " >>input
+echo "energy_cutoff $encut" >>input
+echo " " >>input
+echo "# defines approximately the temperature of electrons (in eV)" >>input
+echo "gaussian_smearing 0.01" >>input
+echo " " >>input
+echo "pp_format 1" >>input
+echo " " >>input
+echo "#mix_method pulay_tf" >>input
+echo "mix_method pulay_kerker" >>input
+echo "#mix_method broyden" >>input
+echo " " >>input
+echo "mixing_energy_cutoff $mixing_energy_cutoff_wfn" >>input
+echo "submatrix_energy_cutoff $submatrix_energy_cutoff_wfn" >>input
+echo " " >>input
+echo "#diagonalization_method  Mauri" >>input
+echo "diagonalization_method  Grassmann" >>input
+echo "#occupy_levels  fixed" >>input
+echo "#screening_type atomic" >>input
+echo " " >>input
+echo "#fermi_level 0.57803349" >>input
+echo "screening_type previous" >>input
+echo "accuracy_diag 1e-12" >>input
+echo "potential_convergence_criterion 1e-6"  >>input
+echo " " >>input
+echo "max_iter_diag 2" >>input
+echo "max_iter_diag_band 150" >>input
+echo "max_iter_scfloop 2" >>input
+echo " " >>input
+echo "gw_sum 1" >>input
+echo " " >>input
+echo "# diagsafety 2.0" >>input
+echo "# output_flags dos_eigvals_cdplot_ballnstick" >>input
+echo "# gw_shift 0.01 0.01 0.01" >>input
+echo "#output_flags gwr" >>input
+echo "#output_flags neighbors" >>input
+echo "#output_flags gwscreening" >>input
+if [ $real_or_complex -eq 2 ]
+then
+echo "output_flags gwc" >>input
+else
+echo "output_flags gwr" >>input
+fi
+echo "# lsda_u 1" >>input
+echo " " >>input
+echo " " >>input
+cat cell >>input
+echo " " >>input
+mv input 02scf_shift
+cd 02scf_shift
+for i in  $eles
+do 
+ln -s $pseudo_dir/${i}_POT.DAT .
+done
+ln -s ../wfnselect.inp .
+cd $main_dft
+fi
+
+
+echo "##########Preparing inputs for 03wfnq#############"
+cat >input<<!
+begin pw_jobs
+pw_job nonselfcon
+end pw_jobs
+
+# job relax
+# relax_what force
+# relax_eps_factor 0.5
+# relax_coord_factor 1.0
+# relax_accuracy 0.0001
+relax_max_iter 0
+!
+echo "k_grid ${k_grid[0]} ${k_grid[1]} ${k_grid[2]}" >>input
+echo "k_grid_shift ${k_grid_shift[0]} ${k_grid_shift[1]} ${k_grid_shift[2]}" >>input
+echo " " >>input
+echo "exchange_correlation $exchange_correlation" >>input
+echo " " >>input
+echo "number_bands $nbands_scf" >>input
+echo "#number_of_spins 2" >>input
+echo "number_bands_fft 4" >>input
+echo " " >>input
+echo "# various energy cutoffs in Ry " >>input
+echo "# energy_cutoff [Ry]:  determines size of hamiltonian matrix " >>input
+echo "energy_cutoff $encut" >>input
+echo " " >>input
+echo "# defines approximately the temperature of electrons (in eV)" >>input
+echo "gaussian_smearing 0.01" >>input
+echo " " >>input
+echo "pp_format 1" >>input
+echo " " >>input
+echo "#mix_method pulay_tf" >>input
+echo "mix_method pulay_kerker" >>input
+echo "#mix_method broyden" >>input
+echo " " >>input
+echo "mixing_energy_cutoff $mixing_energy_cutoff_scf" >>input
+echo "submatrix_energy_cutoff $submatrix_energy_cutoff_scf" >>input
+echo " " >>input
+echo "#diagonalization_method  Mauri" >>input
+echo "diagonalization_method  Grassmann" >>input
+echo "#occupy_levels  fixed" >>input
+echo "#screening_type atomic" >>input
+echo " " >>input
+echo "#fermi_level 0.57803349" >>input
+echo "screening_type previous" >>input
+echo "accuracy_diag 1e-12" >>input
+echo "potential_convergence_criterion 1e-6"  >>input
+echo " " >>input
+echo "max_iter_diag 100" >>input
+echo "max_iter_diag_band 150" >>input
+echo "max_iter_scfloop 40" >>input
+echo " " >>input
+echo "gw_sum 2" >>input
+echo " " >>input
+echo "# diagsafety 2.0" >>input
+echo "# output_flags dos_eigvals_cdplot_ballnstick" >>input
+echo "#output_flags gwr" >>input
+echo "#output_flags neighbors" >>input
+echo "#output_flags gwscreening" >>input
+if [ $real_or_complex -eq 2 ]
+then
+echo "output_flags gwc" >>input
+else
+echo "output_flags gwr" >>input
+fi
+echo "# lsda_u 1" >>input
+echo " " >>input
+echo " " >>input
+cat cell >>input
+echo " " >>input
+
+if [ $two_dimentional -eq 1 ]; then
+
+if [ -d "03wfnq1" ]; then
+cp input input1
+echo "gw_shift ${gw_shift1[0]} ${gw_shift1[1]} ${gw_shift1[2]}" >>input1
+mv input1 03wfnq1/input
+cd 03wfnq1
+for i in  $eles
+do 
+ln -s $pseudo_dir/${i}_POT.DAT .
+done
+ln -s ../wfnselect.inp .
+cd $main_dft
+fi
+
+if [ -d "03wfnq2" ]; then
+cp input input2
+echo "gw_shift ${gw_shift2[0]} ${gw_shift2[1]} ${gw_shift2[2]}" >>input2
+mv input2 03wfnq2/input
+cd 03wfnq2
+for i in  $eles
+do 
+ln -s $pseudo_dir/${i}_POT.DAT .
+done
+ln -s ../wfnselect.inp .
+cd $main_dft
+fi
+
+if [ -d "03wfnq3" ]; then
+cp input input3
+echo "gw_shift ${gw_shift3[0]} ${gw_shift3[1]} ${gw_shift3[2]}" >>input3
+mv input3 03wfnq3/input
+cd 03wfnq3
+for i in  $eles
+do 
+ln -s $pseudo_dir/${i}_POT.DAT .
+done
+ln -s ../wfnselect.inp .
+cd $main_dft
+fi
+
+if [ -d "03wfnq4" ]; then
+cp input input4
+echo "gw_shift ${gw_shift4[0]} ${gw_shift4[1]} ${gw_shift4[2]}" >>input4
+mv input4 03wfnq4/input
+cd 03wfnq4
+for i in  $eles
+do 
+ln -s $pseudo_dir/${i}_POT.DAT .
+done
+ln -s ../wfnselect.inp .
+cd $main_dft
+fi
+
+fi
+
+if [ $two_dimentional -eq 0 ]; then
+
+if [ -d "03wfnq" ]; then
+cp input input0
+echo "gw_shift ${gw_shift[0]} ${gw_shift[1]} ${gw_shift[2]}" >>input0
+mv input0 03wfnq/input
+cd 03wfnq
+for i in  $eles
+do 
+ln -s $pseudo_dir/${i}_POT.DAT .
+done
+ln -s ../wfnselect.inp .
+cd $main_dft
+fi
+fi
+
+if [ -d "04wfn_co" ]; then
+mv input 04wfn_co
+cd 04wfn_co
+for i in  $eles
+do
+ln -s $pseudo_dir/${i}_POT.DAT .
+done
+ln -s ../wfnselect.inp .
+cd $main_dft
+fi
+
+nbs=`expr $number_of_valence_electrons + $number_of_atoms \* $addtional_conduction_bands_per_atom`
+cat >wfnselect.inp<<!
+$nbs                 ! startingband1 9 valence + 4 atoms * 16 bands/atom
+$energystep1                ! energystep1
+$startingenergy2            ! startingenergy2
+$energystep2                ! energystep2
+0                    ! 1,  calculate weight.dat without pick wfns; 0,  select wfns and write to wfn.out
+!
+
+cd $main_dir
+echo "All the DFT input files you want are prepared. Please carefully check everything is right before the submittion!"

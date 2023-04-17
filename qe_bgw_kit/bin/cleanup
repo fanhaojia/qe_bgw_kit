@@ -6,11 +6,11 @@ pp=$PWD
 
 to_clean=`echo $*`
 declare -A dicts
-dicts=([0]="all" [1]="vasp" [11]="vasp_all" [2]="qe" [22]="qe_all" [3]="bgw" [33]="bgw_all" [4]="qe_bgw" [5]="others")
+dicts=([0]="all" [1]="vasp" [11]="vasp_all" [2]="qe" [22]="qe_all" [3]="bgw" [33]="bgw_all" [4]="qe_bgw" [5]="paratec" [6]="others")
 
 if [ -z "$to_clean" ]; then
   echo "please enter:\
-  [0]="all" [1]="vasp" [11]="vasp_all" [2]="qe" [22]="qe_all" [3]="bgw" [33]="bgw_all" [4]="qe_bgw" [5]="others" \
+  [0]="all" [1]="vasp" [11]="vasp_all" [2]="qe" [22]="qe_all" [3]="bgw" [33]="bgw_all" [4]="qe_bgw" [5]="paratec" [6]="others" \
   to cleanup"
   read -p "Enter: " to_clean
   
@@ -26,6 +26,7 @@ export cleanupqe="rm -r *err *out core.* RHO WFN* vxc* VXC pwscf.xml *wfc* input
 export cleanupbgw="rm -r *err *out core.* exciton_* dvmat_norm.dat eigenvectors.h5 checkbz.log time bsemat* bsexmat* bsedmat* chi_converge.dat eps0mat* epsmat* epsilon.log bandstructure.dat dcmat_norm.dat dtmat* eigenvalues* epsdiag.dat eqp.dat eqp_q.dat vmtxel "
 export cleanupqe_bgw="rm -r *err *out core.* DFT eps eps_bse sigma kernel bse intep intep_wannier tmp log* prepare* "
 export cleanupothers="rm -r *err *out core.* "]
+export cleanupparatec="rm -r *.err *.out GWC  kpoints.dat  VMIX  weight.dat fort.9 kmap.dat OUT  PW_LOG  SCF_KPOINTS  STRUC_CONVERGE  STRUC_LOG"
 
 if [ to_clean == 22 ];then
 if [ -d "01scf" ]; then
@@ -143,6 +144,8 @@ do
   $cleanupbgw >/dev/null 2>&1
   elif [ ${dicts[$i]} == "qe_bgw" ];then
   $cleanupqe_bgw >/dev/null 2>&1
+  elif [ ${dicts[$i]} == "paratec" ];then
+  $cleanupparatec >/dev/null 2>&1
   fi
   echo cleanup${dicts[$i]}
 done

@@ -1,4 +1,6 @@
-#!/share/opt/miniconda3/bin/python
+#!/usr/bin/env python
+#coding: utf-8
+
 from math import *
 import numpy as np
 import linecache
@@ -24,7 +26,7 @@ def get_volume(nabc):
     volume = abs(np.dot(np.cross(b1, b2), b3))
     return volume
 
-def split_line_str(line):
+def split_line(line):
     out=[]
     wlist=line.split(' ')
     for word in wlist:
@@ -34,32 +36,6 @@ def split_line_str(line):
                     out.append(word[:-1])
             else:
                 out.append(word)
-    return out 
-
-def split_line_int(line):
-    out=[]
-    wlist=line.split(' ')
-    for word in wlist:
-        if len(word)>0 and word != ' ' :
-            if word[-1]== '\n':
-                if len(word[:-1])>0 and word[:-1]!='':
-                    out.append(int(word[:-1]))
-            else:
-                out.append(int(word))
-    return out 
-
-def split_line_float(line):
-    out=[]
-    wlist=line.split(' ')
-    i=0
-    for word in wlist:
-        if len(word)>0 and word != ' ' and i<3:
-            if word[-1]== '\n':
-                if len(word[:-1])>0 and word[:-1]!='':
-                    out.append(float(word[:-1]))
-            else:
-                out.append(float(word))
-            i=i+1
     return out 
 
 def normalize_atom_position(a):
@@ -79,12 +55,12 @@ def cartesian_to_fractional(xyz, abc):
     nxyz=np.dot(xyz, np.linalg.inv(abc))
     return nxyz
 
-def read_poscar(fname, cartesian=False):
+def read_poscar(fname='POSCAR', cartesian=False):
     xline = linecache.getline(fname, 6)  ##count how many element in this POSCAR
-    elements=split_line_str(xline)
+    elements=split_line(xline)
     #print (elements)
     xline = linecache.getline(fname, 7)  ##count how many atoms for each element in this POSCAR
-    natom=split_line_int(xline)
+    natom=[int(i) for i in split_line(xline)]
     #print (natom) 
     xline = linecache.getline(fname, 8)  ##POSCAR is in Cartesian or fractional
     poscar_type=xline[0]
@@ -93,11 +69,13 @@ def read_poscar(fname, cartesian=False):
     for i in range (len_block):
         if i in range(3,6):
             xline = linecache.getline(fname, i)
-            abc.append(split_line_float(xline))
+            out=[float(i) for i in split_line(xline)[:3]]
+            abc.append(out)
         elif i > 8:
             xline = linecache.getline(fname, i)
-            a=split_line_float(xline)
-            if poscar_type=='D':
+            a=[float(i) for i in split_line(xline)[:3]]
+            #print (a)
+            if poscar_type=='D' or poscar_type=='d':
                 for h in range(3):
                     a[h]=normalize_atom_position(a[h])
                     h=h+1

@@ -2,7 +2,8 @@
 echo "#########################mkdir for 01scf 02wfn etc...#######################"
 export wfn_dir=$PWD
 nw=`awk '{print NR}' weight.dat |tail -n1`
-nb_cv=`expr $nw - 2`
+c=3
+nb_cv=`expr $nw - $c`
 nb_c=`expr $nb_cv - $number_of_valence_electrons`
 
 export main_dir=$wfn_dir/../../
@@ -45,11 +46,8 @@ sum_method 0              # 0 is for band summation; default is 2, for exact sum
 # gcomm_elements
 gcomm_matrix
 
-number_qpoints  $nqs
-
 !
 fi
-
 
 if [ $two_dimentional -eq 1 ]; then
 mkdir eps1 eps2 eps3 eps4 sigma intep
@@ -102,8 +100,6 @@ cell_slab_truncation
 # gcomm_elements
 gcomm_matrix
 
-number_qpoints  $nqs
-
 !
 fi
 
@@ -123,8 +119,12 @@ echo 'end' >>kpoints
 
 
 if [ $two_dimentional -eq 0 ]; then
+
+echo "number_qpoints  $nqs" >>epsilon.inp
+echo " ">>epsilon.inp
 cat qpoints>>epsilon.inp
 mv epsilon.inp ./eps
+rm qpoints
 
 cat >sigma.inp<<!
 screened_coulomb_cutoff   $epsilon_cutoff
@@ -139,7 +139,7 @@ degeneracy_check_override
 dont_use_vxcdat
 sum_method 0              # 0 is for band sampling; default is 2, for exact summation
 
-number_sigma_pools 5
+number_sigma_pools 4
 
 finite_difference_spacing   0.5
 # ggpsum 2
@@ -158,6 +158,7 @@ number_kpoints $nqs
 !
 cat kpoints >>sigma.inp
 mv sigma.inp sigma
+rm kp kpoints
 cat >link.sh<<!
 #!/bin/sh
 rm epsmat eps0mat* RHO VXC weight.dat WFN_inner
@@ -175,20 +176,33 @@ fi
 
 if [ $two_dimentional -eq 1 ]; then
 cp epsilon.inp epsilon.inp1
+echo "number_qpoints  $nqs" >>epsilon.inp1
+echo " ">>epsilon.inp1
 cat qpoints>>epsilon.inp1
 mv epsilon.inp1 ./eps1/epsilon.inp
+rm qpoints
 
 cp epsilon.inp epsilon.inp2
+echo "number_qpoints  1" >>epsilon.inp2
+echo " ">>epsilon.inp2
 cat qpoints2>>epsilon.inp2
 mv epsilon.inp2 ./eps2/epsilon.inp
+rm qpoints2
 
 cp epsilon.inp epsilon.inp3
+echo "number_qpoints  1" >>epsilon.inp3
+echo " ">>epsilon.inp3
 cat qpoints3>>epsilon.inp3
 mv epsilon.inp3 ./eps3/epsilon.inp
+rm qpoints3
 
 cp epsilon.inp epsilon.inp4
+echo "number_qpoints  1" >>epsilon.inp4
+echo " ">>epsilon.inp4
 cat qpoints4>>epsilon.inp4
 mv epsilon.inp4 ./eps4/epsilon.inp
+rm qpoints4
+rm epsilon.inp
 
 cat >sigma.inp<<!
 screened_coulomb_cutoff   $epsilon_cutoff
@@ -207,7 +221,7 @@ sum_method 0              # 0 is for band sampling; default is 2, for exact summ
 fix2dq0
 number_q0 4
 
-number_sigma_pools 5
+number_sigma_pools 4
 finite_difference_spacing   0.5
 
 # npwsub 600
@@ -228,7 +242,7 @@ number_kpoints $nqs
 !
 cat kpoints >>sigma.inp
 mv sigma.inp sigma
-
+rm kp kpoints
 cat >link.sh<<!
 #!/bin/sh
 rm epsmat eps0mat* RHO VXC weight.dat WFN_inner

@@ -109,7 +109,7 @@ cat $KK/src/BGW_cplx_1 >>prepare_bgw_paratec.sh
 cat $KK/src/bgw_main_paratec >>prepare_bgw_paratec.sh
 cat $KK/src/bgw_job_paratec >>prepare_bgw_paratec.sh
 
-echo "rm *prepare* " >>prepare_bgw_paratec.sh
+echo "rm ./DFT/02wfn/*prepare* " >>prepare_bgw_paratec.sh
 
 chmod +x prepare_bgw_paratec.sh
 ./prepare_bgw_paratec.sh all >log.bgw.paratec.prepare

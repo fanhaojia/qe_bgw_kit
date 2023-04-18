@@ -16,7 +16,7 @@ echo "##########Preparing inputs for eps#############"
 cd $main_dir/eps
 echo "#!/usr/bin/bash" >sub.sh
 echo "#BSUB -J eps" >>sub.sh
-cat $KIT_PATH/src/PBS_$Speed_eps >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_sigma >>sub.sh
 echo >>sub.sh
 echo "echo "start time">time" >>sub.sh
 cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
@@ -29,9 +29,9 @@ echo "#!/bin/sh" >link.sh
 cat >link.sh<<!
 #!/bin/sh
 rm epsmat eps0mat* weight.dat WFN WFNq
-ln -s ../02wfn/weight.dat .
-ln -s ../02wfn/GWC ./WFN
-ln -s ../03wfnq/GWC ./WFNq
+ln -s ../DFT/02wfn/weight.dat .
+ln -s ../DFT/02wfn/GWC ./WFN
+ln -s ../DFT/03wfnq/GWC ./WFNq
 degeneracy_check.x WFN
 !
 chmod +x link.sh
@@ -43,7 +43,7 @@ echo "##########Preparing inputs for eps#############"
 cd $main_dir/eps1
 echo "#!/usr/bin/bash" >sub.sh
 echo "#BSUB -J eps1" >>sub.sh
-cat $KIT_PATH/src/PBS_$Speed_scf >>sub.sh
+cat $KIT_PATH/src/PBS_$Speed_sigma >>sub.sh
 echo >>sub.sh
 echo "echo "start time">time" >>sub.sh
 cat $KIT_PATH/src/$Compiler_bgw >>sub.sh
@@ -57,9 +57,9 @@ echo "#!/bin/sh" >link.sh
 cat >link.sh<<!
 #!/bin/sh
 rm epsmat eps0mat* weight.dat WFN WFNq
-ln -s ../02wfn/weight.dat .
-ln -s ../02wfn/GWC ./WFN
-ln -s ../03wfnq2/GWC ./WFNq
+ln -s ../DFT/02wfn/weight.dat .
+ln -s ../DFT/02wfn/GWC ./WFN
+ln -s ../DFT/03wfnq1/GWC ./WFNq
 degeneracy_check.x WFN
 !
 chmod +x link.sh
@@ -85,9 +85,9 @@ echo "#!/bin/sh" >link.sh
 cat >link.sh<<!
 #!/bin/sh
 rm epsmat eps0mat* weight.dat WFN WFNq
-ln -s ../02wfn/weight.dat .
-ln -s ../02wfn/GWC ./WFN
-ln -s ../03wfnq2/GWC ./WFNq
+ln -s ../DFT/02wfn/weight.dat .
+ln -s ../DFT/02wfn/GWC ./WFN
+ln -s ../DFT/03wfnq2/GWC ./WFNq
 degeneracy_check.x WFN
 !
 chmod +x link.sh
@@ -112,9 +112,9 @@ echo "#!/bin/sh" >link.sh
 cat >link.sh<<!
 #!/bin/sh
 rm epsmat eps0mat* weight.dat WFN WFNq
-ln -s ../02wfn/weight.dat .
-ln -s ../02wfn/GWC ./WFN
-ln -s ../03wfnq3/GWC ./WFNq
+ln -s ../DFT/02wfn/weight.dat .
+ln -s ../DFT/02wfn/GWC ./WFN
+ln -s ../DFT/03wfnq3/GWC ./WFNq
 degeneracy_check.x WFN
 !
 chmod +x link.sh
@@ -140,9 +140,9 @@ echo "#!/bin/sh" >link.sh
 cat >link.sh<<!
 #!/bin/sh
 rm epsmat eps0mat* weight.dat WFN WFNq
-ln -s ../02wfn/weight.dat .
-ln -s ../02wfn/GWC ./WFN
-ln -s ../03wfnq4/GWC ./WFNq
+ln -s ../DFT/02wfn/weight.dat .
+ln -s ../DFT/02wfn/GWC ./WFN
+ln -s ../DFT/03wfnq4/GWC ./WFNq
 degeneracy_check.x WFN
 !
 chmod +x link.sh

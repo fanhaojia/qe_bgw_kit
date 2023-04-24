@@ -231,6 +231,7 @@ cat >in<<!
    outdir = './'
    wfcdir = './'
    pseudo_dir = $pseudo_dir
+   disk_io='low'
 /
 &system
    ibrav = 0
@@ -288,7 +289,8 @@ cat >in<<!
    wf_collect = .true.
    outdir = './'
    wfcdir = './'
-   pseudo_dir = $pseudo_dir   
+   pseudo_dir = $pseudo_dir
+   disk_io='low' 
 /
 &system
    ibrav = 0
@@ -368,6 +370,7 @@ cat >in<<!
    outdir = './'
    wfcdir = './'
    pseudo_dir = $pseudo_dir   
+   disk_io='low'
 /
 &system
    ibrav = 0
@@ -446,7 +449,8 @@ cat >in<<!
    wf_collect = .true.
    outdir = './'
    wfcdir = './'
-   pseudo_dir = $pseudo_dir   
+   pseudo_dir = $pseudo_dir
+   disk_io='low' 
 /
 &system
    ibrav = 0
@@ -535,7 +539,8 @@ cat >in<<!
    wf_collect = .true.
    outdir = './'
    wfcdir = './'
-   pseudo_dir = $pseudo_dir   
+   pseudo_dir = $pseudo_dir
+   disk_io='low' 
 /
 &system
    ibrav = 0
@@ -614,7 +619,8 @@ cat >in<<!
    wf_collect = .true.
    outdir = './'
    wfcdir = './'
-   pseudo_dir = $pseudo_dir   
+   pseudo_dir = $pseudo_dir
+   disk_io='low' 
 /
 &system
    ibrav = 0
@@ -693,7 +699,8 @@ cat >in<<!
    wf_collect = .true.
    outdir = './'
    wfcdir = './'
-   pseudo_dir = $pseudo_dir   
+   pseudo_dir = $pseudo_dir
+   disk_io='low' 
 /
 &system
    ibrav = 0
@@ -770,7 +777,8 @@ cat >in<<!
    wf_collect = .true.
    outdir = './'
    wfcdir = './'
-   pseudo_dir = $pseudo_dir   
+   pseudo_dir = $pseudo_dir
+   disk_io='low' 
 /
 &system
    ibrav = 0

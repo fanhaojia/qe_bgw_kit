@@ -24,7 +24,7 @@ export cleanupvasp="rm -r *err *out core.* vaspout.h5 CHG DOSCAR EIGENVAL IBZKPT
 export cleanupvasp_all="rm -r *err *out core.* vaspout.h5 CHG CHGCAR DOSCAR EIGENVAL IBZKPT OSZICAR OUTCAR PCDAT PROCAR REPORT vasprun.xml WAVECAR XDATCAR "
 export cleanupqe="rm -r *err *out core.* RHO WFN* vxc* VXC pwscf.xml *wfc* input_tmp.in CRASH "
 export cleanupbgw="rm -r *err *out core.* exciton_* dvmat_norm.dat eigenvectors.h5 checkbz.log time bsemat* bsexmat* bsedmat* chi_converge.dat eps0mat* epsmat* epsilon.log bandstructure.dat dcmat_norm.dat dtmat* eigenvalues* epsdiag.dat eqp.dat eqp_q.dat vmtxel "
-export cleanupqe_bgw="rm -r *err *out core.* DFT eps eps_bse sigma kernel bse intep intep_wannier tmp log* prepare* "
+export cleanupqe_bgw="rm -r *err *out core.* DFT eps* eps_bse sigma kernel bse intep intep_wannier tmp log* prepare* "
 export cleanupothers="rm -r *err *out core.* "]
 export cleanupparatec="rm -r *.err *.out GWC  kpoints.dat  VMIX  weight.dat fort.9 kmap.dat OUT  PW_LOG  SCF_KPOINTS  STRUC_CONVERGE  STRUC_LOG"
 

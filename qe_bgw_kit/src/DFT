@@ -1,3 +1,4 @@
+module load hdf5
 export QE_BIN=/share/opt/apps/qe/7.1/2017/bin
 PW_exe="$QE_BIN/pw.x < in > ./report"
 PW_exe_nk2="$QE_BIN/pw.x -nk 2 -i in > ./report"

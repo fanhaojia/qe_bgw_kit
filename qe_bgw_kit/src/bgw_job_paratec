@@ -26,14 +26,25 @@ echo ""$AA"MPI_exe "$AA"EPSILON_EXEC >report"  >>sub.sh
 chmod +x sub.sh
 
 echo "#!/bin/sh" >link.sh
-cat >link.sh<<!
-#!/bin/sh
+if [ $real_or_complex -eq 1 ]
+then
+cat >>link.sh<<!
+rm epsmat eps0mat* weight.dat WFN WFNq
+ln -s ../DFT/02wfn/weight.dat .
+ln -s ../DFT/02wfn/GWR ./WFN
+ln -s ../DFT/03wfnq/GWR ./WFNq
+degeneracy_check.x WFN
+!
+else 
+cat >>link.sh<<!
 rm epsmat eps0mat* weight.dat WFN WFNq
 ln -s ../DFT/02wfn/weight.dat .
 ln -s ../DFT/02wfn/GWC ./WFN
 ln -s ../DFT/03wfnq/GWC ./WFNq
 degeneracy_check.x WFN
 !
+fi
+
 chmod +x link.sh
 cd $main_dir
 fi
@@ -54,14 +65,24 @@ echo "wait">>sub.sh
 chmod +x sub.sh
 
 echo "#!/bin/sh" >link.sh
-cat >link.sh<<!
-#!/bin/sh
+if [ $real_or_complex -eq 1 ]
+then
+cat >>link.sh<<!
+rm epsmat eps0mat* weight.dat WFN WFNq
+ln -s ../DFT/02wfn/weight.dat .
+ln -s ../DFT/02wfn/GWR ./WFN
+ln -s ../DFT/03wfnq1/GWR ./WFNq
+degeneracy_check.x WFN
+!
+else
+cat >>link.sh<<!
 rm epsmat eps0mat* weight.dat WFN WFNq
 ln -s ../DFT/02wfn/weight.dat .
 ln -s ../DFT/02wfn/GWC ./WFN
 ln -s ../DFT/03wfnq1/GWC ./WFNq
 degeneracy_check.x WFN
 !
+fi
 chmod +x link.sh
 cd $main_dir
 fi
@@ -82,14 +103,24 @@ echo ""$AA"MPI_exe "$AA"EPSILON_EXEC >report"  >>sub.sh
 chmod +x sub.sh
 
 echo "#!/bin/sh" >link.sh
-cat >link.sh<<!
-#!/bin/sh
+if [ $real_or_complex -eq 1 ]
+then
+cat >>link.sh<<!
+rm epsmat eps0mat* weight.dat WFN WFNq
+ln -s ../DFT/02wfn/weight.dat .
+ln -s ../DFT/02wfn/GWR ./WFN
+ln -s ../DFT/03wfnq2/GWR ./WFNq
+degeneracy_check.x WFN
+!
+else
+cat >>link.sh<<!
 rm epsmat eps0mat* weight.dat WFN WFNq
 ln -s ../DFT/02wfn/weight.dat .
 ln -s ../DFT/02wfn/GWC ./WFN
 ln -s ../DFT/03wfnq2/GWC ./WFNq
 degeneracy_check.x WFN
 !
+fi
 chmod +x link.sh
 cd $main_dir
 fi
@@ -109,14 +140,25 @@ echo ""$AA"MPI_exe "$AA"EPSILON_EXEC >report"  >>sub.sh
 chmod +x sub.sh
 
 echo "#!/bin/sh" >link.sh
-cat >link.sh<<!
-#!/bin/sh
+if [ $real_or_complex -eq 1 ]
+then
+cat >>link.sh<<!
+rm epsmat eps0mat* weight.dat WFN WFNq
+ln -s ../DFT/02wfn/weight.dat .
+ln -s ../DFT/02wfn/GWR ./WFN
+ln -s ../DFT/03wfnq3/GWR ./WFNq
+degeneracy_check.x WFN
+!
+else
+cat >>link.sh<<!
 rm epsmat eps0mat* weight.dat WFN WFNq
 ln -s ../DFT/02wfn/weight.dat .
 ln -s ../DFT/02wfn/GWC ./WFN
 ln -s ../DFT/03wfnq3/GWC ./WFNq
 degeneracy_check.x WFN
 !
+fi
+
 chmod +x link.sh
 cd $main_dir
 fi
@@ -137,14 +179,25 @@ echo ""$AA"MPI_exe "$AA"EPSILON_EXEC >report"  >>sub.sh
 chmod +x sub.sh
 
 echo "#!/bin/sh" >link.sh
-cat >link.sh<<!
-#!/bin/sh
+if [ $real_or_complex -eq 1 ]
+then
+cat >>link.sh<<!
+rm epsmat eps0mat* weight.dat WFN WFNq
+ln -s ../DFT/02wfn/weight.dat .
+ln -s ../DFT/02wfn/GWR ./WFN
+ln -s ../DFT/03wfnq4/GWR ./WFNq
+degeneracy_check.x WFN
+!
+else
+cat >>link.sh<<!
 rm epsmat eps0mat* weight.dat WFN WFNq
 ln -s ../DFT/02wfn/weight.dat .
 ln -s ../DFT/02wfn/GWC ./WFN
 ln -s ../DFT/03wfnq4/GWC ./WFNq
 degeneracy_check.x WFN
 !
+fi
+
 chmod +x link.sh
 cd $main_dir
 fi

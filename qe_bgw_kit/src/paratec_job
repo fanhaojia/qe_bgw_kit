@@ -4,6 +4,7 @@ DFT_code=paratec
 Compiler_dft=compiler
 
 cd $main_dft
+AA="$"
 
 if [ -d "01scf" ]; then
 echo "##########Preparing job.sh for 01scf#############"
@@ -17,8 +18,15 @@ echo >>sub.sh
 echo ""$AA"MPI_exe" $PW_exe  >>sub.sh
 echo 'wait' >>sub.sh
 echo >>sub.sh
-echo "vxc=`awk '/vxc0/ {print $2}' OUT |tail -n -1`" >>sub.sh
-echo "echo $vxc >>../wfnselect.inp"  >>sub.sh
+
+VV="$AA"vxc
+V2="$AA"2
+WW="awk"
+#echo "vxc=`"awk" '/vxc0/ {print "$AA"2}' OUT |tail -n -1`" >>sub.sh
+cat >>sub.sh<<!
+vxc=\`$WW '/vxc0/ {print $V2}' OUT |tail -n 1\`
+!
+echo "echo $VV >>../wfnselect.inp"  >>sub.sh
 
 chmod +x sub.sh
 cd ../

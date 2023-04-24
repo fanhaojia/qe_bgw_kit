@@ -26,7 +26,7 @@ TT="$AA"tools_bin
 export use_poscar=.True.                   #using POSCAR in format of VASP to get the cell file
 
 ##########You must set the following enivronmental varies ##############
-module load compiler/intel/2017_up7 hdf5
+module load compiler/intel/2017_up7
 export KIT_PATH=$PWD
 export tools_bin=$PWD/bin
 export BGW_BIN=$BGW_BIN
@@ -41,15 +41,16 @@ export PATH=$PYTHON_PATH:$PP
 cat > ./src/compiler<<!
 ulimit -s unlimited
 ulimit -l unlimited
-module load compiler/intel/2017_up7 hdf5
+module load compiler/intel/2017_up7
 export MKL_DEBUG_CPU_TYPE=5
 export MKL_CBWR=AVX2
 export FI_PROVIDER=mlx
 export I_MPI_PIN_DOMAIN=numa
 export MPI_exe="mpirun --bind-to l3cache --map-by l3cache -genv I_MPI_FABRICS=shm:tcp -genv I_MPI_PIN_CELL=1 -genv KMP_AFFINITY verbose,granularity=fine,compact -bootstrap lsf"
 !
-
+#here hdf5 is optional, if your QE don't support hdf5, then modify the "hdf5" flag in input_qe_bgw to 0. 
 cat > ./src/DFT <<!
+module load hdf5
 export QE_BIN=$QE_BIN
 PW_exe="$QQ/pw.x < in > ./report"
 PW_exe_nk2="$QQ/pw.x -nk 2 -i in > ./report"
